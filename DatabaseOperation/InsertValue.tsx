@@ -13,24 +13,25 @@ export const initializeDatabase = () => {
 };
 
 // Function to insert User 
+// Tested, can function properly
 export const InsertUser = (
-  username: any,
-  password: any,
-  name: any,
-  email: any,
+  username: string,
+  password: string,
+  name: string,
+  email: string,
 ) => {
   Db.transaction(tx => {
     tx.executeSql(
-      `INSERT INTO User (username, password, name, email, created_at)   
-                VALUES(?,?,?,?,?)`,
+      `INSERT INTO User (username, password, name, email, create_at)   
+       VALUES(?, ?, ?, ?, ?)`,
       [username, password, name, email, new Date().toISOString()],
-
       (_, results) => {
-        console.log('User inserted :', results.insertId);
+        console.log('User inserted successfully with insertID: ', results);
       },
-
       (_, error) => {
-        console.log('Insert error', error);
+        console.log('Insert error details:', error); // Log full error
+        console.log('Error message:', error?.message); // Log error message
+        console.log('Error code:', error?.code); // Log error code
       },
     );
   });
@@ -39,23 +40,29 @@ export const InsertUser = (
 //Function to insert Folder, no folder_id because it is auto generated
 // No is_deleted and is_pinned, both will set to 0 when create
 // No created_at and updated_at, both will set to current time
-export const InsertFolder = ( 
-  folder_name: any,
-  username: any,
-  parent_folder_id: any
+export const InsertFolder = (
+  folder_name: string,
+  username: string,
+  parent_folder_id: string | null,
 ) => {
   Db.transaction(tx => {
     tx.executeSql(
       `INSERT INTO Folder (folder_name, created_at, updated_at, username, parent_folder_id)   
-                VALUES(?,?,?,?,?)`,
-      [folder_name, new Date().toISOString(), new Date().toISOString(), username, parent_folder_id],
-
+       VALUES(?, ?, ?, ?, ?)`,
+      [
+        folder_name,
+        new Date().toISOString(),
+        new Date().toISOString(),
+        username,
+        parent_folder_id,
+      ],
       (_, results) => {
-        console.log('Folder inserted :', results.insertId);
+        console.log('Folder inserted successfully with insertID: ', results);
       },
-
       (_, error) => {
-        console.log('Insert error', error);
+        console.log('Insert error details:', error);
+        console.log('Error message:', error?.message);
+        console.log('Error code:', error?.code);
       },
     );
   });
@@ -66,22 +73,29 @@ export const InsertFolder = (
 // No created_at and updated_at, both will set to current time
 // Content will be set to "" when created
 export const InsertNote = (
-  title: any,
-  username: any,
-  folder_id: any,
+  title: string,
+  username: string,
+  folder_id: string | null,
 ) => {
   Db.transaction(tx => {
     tx.executeSql(
       `INSERT INTO Note (title, content, created_at, updated_at, username, folder_id)   
-                VALUES(?,?,?,?,?,?)`,
-      [title, '', new Date().toISOString(), new Date().toISOString(), username, folder_id],
-
+       VALUES(?, ?, ?, ?, ?, ?)`,
+      [
+        title,
+        '',
+        new Date().toISOString(),
+        new Date().toISOString(),
+        username,
+        folder_id,
+      ],
       (_, results) => {
-        console.log('Note inserted :', results.insertId);
+        console.log('Note inserted successfully with insertID: ', results);
       },
-
       (_, error) => {
-        console.log('Insert error', error);
+        console.log('Insert error details:', error);
+        console.log('Error message:', error?.message);
+        console.log('Error code:', error?.code);
       },
     );
   });
@@ -89,23 +103,23 @@ export const InsertNote = (
 
 //Function to insert Image, no image_id because it is auto generated
 export const InsertImage = (
-  local_path: any,
-  width: any,
-  height: any,
-  note_id:any,
+  local_path: string,
+  width: number,
+  height: number,
+  note_id: string,
 ) => {
   Db.transaction(tx => {
     tx.executeSql(
       `INSERT INTO Image (local_path, width, height, note_id)   
-                VALUES(?,?,?,?)`,
-      [local_path, width,height,note_id],
-
+       VALUES(?, ?, ?, ?)`,
+      [local_path, width, height, note_id],
       (_, results) => {
-        console.log('Image inserted :', results.insertId);
+        console.log('Image inserted successfully with insertID: ', results);
       },
-
       (_, error) => {
-        console.log('Insert error', error);
+        console.log('Insert error details:', error);
+        console.log('Error message:', error?.message);
+        console.log('Error code:', error?.code);
       },
     );
   });

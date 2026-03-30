@@ -46,7 +46,7 @@ export const CreateTable = () => { //Method used to create table in Sqlite
         FOREIGN KEY (parent_folder_id) REFERENCES Folder(folder_id) ON DELETE CASCADE
         )`,
       [],
-      () => console.log('User table created'),
+      () => console.log('Folder table created'),
       error => console.log('Error:', error),
     );
 
@@ -65,7 +65,7 @@ export const CreateTable = () => { //Method used to create table in Sqlite
         FOREIGN KEY (folder_id) REFERENCES Folder(folder_id) ON DELETE SET NULL
         )`,
       [],
-      () => console.log('User table created'),
+      () => console.log('Note table created'),
       error => console.log('Error:', error),
     );
 
@@ -79,7 +79,7 @@ export const CreateTable = () => { //Method used to create table in Sqlite
         FOREIGN KEY (note_id) REFERENCES Note(note_id) ON DELETE CASCADE 
         )`,
       [],
-      () => console.log('User table created'),
+      () => console.log('Image table created'),
       error => console.log('Error:', error),
     );
   });
