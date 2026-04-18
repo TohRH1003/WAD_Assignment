@@ -3,124 +3,179 @@ Note: I havent test all the Function, I just write it
       If u guys have started to use, tell me any error if found
 */
 
+import {db, CreateTable} from './CreateTable';
 
-// databaseService.ts or any other file
-import {Db, CreateTable} from './CreateTable';
-
-// Call this function to initialize tables
 export const initializeDatabase = () => {
   CreateTable();
 };
 
-// Function to insert User 
-// Tested, can function properly
+const normalizeSqliteError = (error: any) => {
+  const rawMessage = `${error?.message || ''} ${
+    error?.code || ''
+  }`.toLowerCase();
+
+  if (
+    rawMessage.includes('unique') &&
+    (rawMessage.includes('user.username') || rawMessage.includes('username'))
+  ) {
+    return new Error('Username already exists');
+  }
+
+  if (
+    rawMessage.includes('unique') &&
+    (rawMessage.includes('user.email') || rawMessage.includes('email'))
+  ) {
+    return new Error('Email already exists');
+  }
+
+  if (rawMessage.includes('not null')) {
+    return new Error('All fields are required');
+  }
+
+  if (error instanceof Error && error.message) {
+    return error;
+  }
+
+  return new Error('Unable to create account right now');
+};
+
 export const InsertUser = (
   username: string,
   password: string,
   name: string,
   email: string,
 ) => {
-  Db.transaction(tx => {
-    tx.executeSql(
-      `INSERT INTO User (username, password, name, email, create_at)   
-       VALUES(?, ?, ?, ?, ?)`,
-      [username, password, name, email, new Date().toISOString()],
-      (_, results) => {
-        console.log('User inserted successfully with insertID: ', results);
-      },
-      (_, error) => {
-        console.log('Insert error details:', error); // Log full error
-        console.log('Error message:', error?.message); // Log error message
-        console.log('Error code:', error?.code); // Log error code
-      },
-    );
+  return new Promise((resolve, reject) => {
+    const trimmedUsername = username.trim();
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+
+    if (!trimmedUsername || !password.trim() || !trimmedName || !trimmedEmail) {
+      reject(new Error('All fields are required'));
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      reject(new Error('Invalid email format'));
+      return;
+    }
+
+    db.transaction(tx => {
+      tx.executeSql(
+        `INSERT INTO User (username, password, name, email, create_at)
+         VALUES(?, ?, ?, ?, ?)`,
+        [
+          trimmedUsername,
+          password,
+          trimmedName,
+          trimmedEmail,
+          new Date().toISOString(),
+        ],
+        (_, results) => {
+          resolve({
+            success: true,
+            username: trimmedUsername,
+            rowsAffected: results.rowsAffected,
+          });
+        },
+        (_, error) => {
+          reject(normalizeSqliteError(error));
+          return false;
+        },
+      );
+    });
   });
 };
 
-//Function to insert Folder, no folder_id because it is auto generated
-// No is_deleted and is_pinned, both will set to 0 when create
-// No created_at and updated_at, both will set to current time
 export const InsertFolder = (
   folder_name: string,
   username: string,
-  parent_folder_id: string | null,
+  parent_folder_id: string | null = null,
 ) => {
-  Db.transaction(tx => {
-    tx.executeSql(
-      `INSERT INTO Folder (folder_name, created_at, updated_at, username, parent_folder_id)   
-       VALUES(?, ?, ?, ?, ?)`,
-      [
-        folder_name,
-        new Date().toISOString(),
-        new Date().toISOString(),
-        username,
-        parent_folder_id,
-      ],
-      (_, results) => {
-        console.log('Folder inserted successfully with insertID: ', results);
-      },
-      (_, error) => {
-        console.log('Insert error details:', error);
-        console.log('Error message:', error?.message);
-        console.log('Error code:', error?.code);
-      },
-    );
+  return new Promise((resolve, reject) => {
+    db.transaction(tx => {
+      tx.executeSql(
+        `INSERT INTO Folder (folder_name, created_at, updated_at, username, parent_folder_id, is_deleted, is_pinned)
+         VALUES(?, ?, ?, ?, ?, 0, 0)`,
+        [
+          folder_name,
+          new Date().toISOString(),
+          new Date().toISOString(),
+          username,
+          parent_folder_id,
+        ],
+        (_, results) => {
+          resolve({
+            success: true,
+            folderId: results.insertId,
+            folderName: folder_name,
+            rowsAffected: results.rowsAffected,
+          });
+        },
+        (_, error) => {
+          reject(error);
+          return false;
+        },
+      );
+    });
   });
 };
 
-//Function to insert Note, no note_id because it is auto generated
-//No is_pinned and is_deleted, both will set to default 0 when created
-// No created_at and updated_at, both will set to current time
-// Content will be set to "" when created
 export const InsertNote = (
   title: string,
   username: string,
   folder_id: string | null,
 ) => {
-  Db.transaction(tx => {
-    tx.executeSql(
-      `INSERT INTO Note (title, content, created_at, updated_at, username, folder_id)   
-       VALUES(?, ?, ?, ?, ?, ?)`,
-      [
-        title,
-        '',
-        new Date().toISOString(),
-        new Date().toISOString(),
-        username,
-        folder_id,
-      ],
-      (_, results) => {
-        console.log('Note inserted successfully with insertID: ', results);
-      },
-      (_, error) => {
-        console.log('Insert error details:', error);
-        console.log('Error message:', error?.message);
-        console.log('Error code:', error?.code);
-      },
-    );
+  return new Promise((resolve, reject) => {
+    db.transaction(tx => {
+      tx.executeSql(
+        `INSERT INTO Note (title, content, created_at, updated_at, username, folder_id, is_deleted, is_pinned)
+         VALUES(?, ?, ?, ?, ?, ?, 0, 0)`,
+        [
+          title,
+          '',
+          new Date().toISOString(),
+          new Date().toISOString(),
+          username,
+          folder_id || null,
+        ],
+        (_, results) => {
+          resolve({
+            success: true,
+            noteId: results.insertId,
+            rowsAffected: results.rowsAffected,
+          });
+        },
+        (_, error) => {
+          reject(error);
+          return false;
+        },
+      );
+    });
   });
 };
 
-//Function to insert Image, no image_id because it is auto generated
 export const InsertImage = (
   local_path: string,
   width: number,
   height: number,
-  note_id: string,
+  note_id: number,
 ) => {
-  Db.transaction(tx => {
-    tx.executeSql(
-      `INSERT INTO Image (local_path, width, height, note_id)   
-       VALUES(?, ?, ?, ?)`,
-      [local_path, width, height, note_id],
-      (_, results) => {
-        console.log('Image inserted successfully with insertID: ', results);
-      },
-      (_, error) => {
-        console.log('Insert error details:', error);
-        console.log('Error message:', error?.message);
-        console.log('Error code:', error?.code);
-      },
-    );
+  return new Promise((resolve, reject) => {
+    db.transaction(tx => {
+      tx.executeSql(
+        `INSERT INTO Image (local_path, width, height, note_id)
+         VALUES(?, ?, ?, ?)`,
+        [local_path, width, height, note_id],
+        (_, results) => {
+          resolve(results);
+        },
+        (_, error) => {
+          reject(error);
+          return false;
+        },
+      );
+    });
   });
 };

@@ -1,69 +1,129 @@
-import {Db, CreateTable} from './CreateTable';
+import {db, CreateTable} from './CreateTable';
 
 export const initializeDatabase = () => {
   CreateTable();
 };
 
-//All the function havent test, if u guys find any error, please tell me
-
-
-//Read user info
-export const ReadUserData = (username: any) => {
+export const ReadUserData = (username: string) => {
   return new Promise((resolve, reject) => {
-    Db.executeSql(
-      'SELECT * From User where username = ?',
-      [username],
+    if (!username || username.trim() === '') {
+      reject(new Error('Username is required'));
+      return;
+    }
 
-      results => {
-        const users = results.rows.raw();
-        resolve(users);
-      },
-      error => {
-        console.log('Error :', error);
-        reject(error);
-      },
-    );
+    db.transaction(tx => {
+      tx.executeSql(
+        'SELECT * FROM User WHERE username = ?',
+        [username.trim()],
+        (_, results) => {
+          if (results.rows.length > 0) {
+            resolve(results.rows.item(0));
+            return;
+          }
+
+          reject(new Error(`User with username "${username}" not found`));
+        },
+        (_, error) => {
+          reject(error);
+          return false;
+        },
+      );
+    });
   });
 };
 
-//Read note for specific user, just metadata, no content of note
-// If note is deleted, will no show
-// Pinned note will aslo shows first
 export const ReadNoteData = (username: string) => {
   return new Promise((resolve, reject) => {
-    Db.executeSql(
-      'SELECT note_id, title, created_at, updated_at, is_pinned, is_deleted, folder_id FROM Note WHERE username = ? AND is_deleted = 0 ORDER BY is_pinned DESC, updated_at DESC',
-      [username],
-      results => {
-        const notes = results.rows.raw();
-        resolve(notes);
-      },
-      error => {
-        console.log('Error details:', error);
-        console.log('Error message:', error?.message);
-        console.log('Error code:', error?.code);
-        reject(error);
-      },
-    );
+    if (!username || username.trim() === '') {
+      reject(new Error('Username is required'));
+      return;
+    }
+
+    db.transaction(tx => {
+      tx.executeSql(
+        `SELECT
+          note_id,
+          title,
+          created_at,
+          updated_at,
+          is_pinned,
+          is_deleted,
+          folder_id
+        FROM Note
+        WHERE username = ? AND is_deleted = 0
+        ORDER BY is_pinned DESC, updated_at DESC`,
+        [username.trim()],
+        (_, results) => {
+          resolve(results.rows.raw());
+        },
+        (_, error) => {
+          reject(error);
+          return false;
+        },
+      );
+    });
   });
 };
 
-//Return only the content of note
-export const ReadNoteContent = (note_id: any) => {
+export const ReadNoteContent = (note_id: number) => {
   return new Promise((resolve, reject) => {
-    Db.executeSql(
-      'SELECT content from Note where note_id = ?',
-      [note_id],
-      results => {
-        const notes = results.rows.raw();
-        resolve(notes);
-      },
-      error => {
-        console.log('Error details:', error);
-        console.log('Error message:', error?.message);
-        console.log('Error code:', error?.code);
-        reject(error);
-      },
-    );
+    if (!note_id) {
+      reject(new Error('Note ID is required'));
+      return;
+    }
+
+    db.transaction(tx => {
+      tx.executeSql(
+        'SELECT content, title, updated_at FROM Note WHERE note_id = ? AND is_deleted = 0',
+        [note_id],
+        (_, results) => {
+          if (results.rows.length > 0) {
+            const note = results.rows.item(0);
+            resolve({
+              content: note.content || '',
+              title: note.title,
+              updated_at: note.updated_at,
+            });
+            return;
+          }
+
+          reject(new Error(`Note with ID ${note_id} not found or is deleted`));
+        },
+        (_, error) => {
+          reject(error);
+          return false;
+        },
+      );
+    });
+  });
+};
+
+export const ReadFolderData = (folder_id: number) => {
+  return new Promise((resolve, reject) => {
+    if (!folder_id) {
+      reject(new Error('Folder ID is required'));
+      return;
+    }
+
+    db.transaction(tx => {
+      tx.executeSql(
+        'SELECT * FROM Folder WHERE folder_id = ? AND is_deleted = 0',
+        [folder_id],
+        (_, results) => {
+          if (results.rows.length > 0) {
+            resolve(results.rows.item(0));
+            return;
+          }
+
+          reject(
+            new Error(`Folder with ID "${folder_id}" not found or is deleted`),
+          );
+        },
+        (_, error) => {
+          reject(error);
+          return false;
+        },
+      );
+    });
   });
 };

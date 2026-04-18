@@ -8,17 +8,17 @@ const errorCallBack = (error: any) => { //Display error message when database ca
   console.log('Database cannot be open:' + error);
 };
 
-export const Db = SQLite.openDatabase(
+export const db = SQLite.openDatabase(
   {
     name: 'noteTaking.sqlite',
-    location: 'default',
+    createFromLocation: '~noteTaking.sqlite',
   },
   openCallBack,
   errorCallBack,
 );
 
 export const CreateTable = () => { //Method used to create table in Sqlite
-  Db.transaction(tx => {
+  db.transaction(tx => {
     tx.executeSql( //Add User table
       `CREATE TABLE IF NOT EXISTS User (  
         username TEXT PRIMARY KEY,  

@@ -1,0 +1,237 @@
+import {StyleSheet} from 'react-native';
+
+export const appStyles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: '#f4f7f5',
+  },
+  content: {
+    padding: 20,
+    gap: 16,
+  },
+  title: {
+    fontSize: 30,
+    fontWeight: '700',
+    color: '#1f2937',
+  },
+  subtitle: {
+    fontSize: 15,
+    color: '#4b5563',
+  },
+  noteScreenHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 12,
+  },
+  pageHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  pageHeaderTextWrap: {
+    flex: 1,
+  },
+  headerGuideButton: {
+    backgroundColor: '#3dc9f3',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  headerGuideButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 18,
+    padding: 18,
+    shadowColor: '#000000',
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    shadowOffset: {width: 0, height: 3},
+    elevation: 3,
+  },
+  cardLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#3dc9f3',
+    marginBottom: 8,
+    textTransform: 'uppercase',
+  },
+  quoteDay: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 6,
+  },
+  quoteText: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: '#374151',
+  },
+  segmentRow: {
+    flexDirection: 'row',
+    backgroundColor: '#e5e7eb',
+    borderRadius: 12,
+    padding: 4,
+    marginBottom: 16,
+  },
+  segmentButton: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  segmentButtonActive: {
+    backgroundColor: '#3dc9f3',
+  },
+  segmentText: {
+    color: '#374151',
+    fontWeight: '600',
+  },
+  segmentTextActive: {
+    color: '#ffffff',
+  },
+  inputGroup: {
+    marginBottom: 14,
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 6,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    backgroundColor: '#ffffff',
+    color: '#111827',
+  },
+  inputDisabled: {
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    backgroundColor: '#f3f4f6',
+    color: '#6b7280',
+  },
+  readonlyValue: {
+    color: '#6b7280',
+    fontSize: 15,
+  },
+  primaryButton: {
+    backgroundColor: '#3dc9f3',
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  primaryButtonText: {
+    color: '#ffffff',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  secondaryButton: {
+    borderWidth: 1,
+    borderColor: '#3dc9f3',
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  secondaryButtonText: {
+    color: '#3dc9f3',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  linkButton: {
+    alignItems: 'center',
+    marginTop: 14,
+  },
+  linkButtonText: {
+    color: '#b91c1c',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.45)',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  modalCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 18,
+    padding: 20,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 12,
+  },
+  modalStep: {
+    fontSize: 15,
+    color: '#374151',
+    lineHeight: 22,
+    marginBottom: 10,
+  },
+  noteHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  noteListTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#111827',
+  },
+  profileShortcut: {
+    backgroundColor: '#e6fffb',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  profileShortcutText: {
+    color: '#3dc9f3',
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  notePlaceholderTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1f2937',
+    marginBottom: 8,
+  },
+  notePlaceholderText: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: '#4b5563',
+  },
+  noteItem: {
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 14,
+    padding: 14,
+    marginTop: 12,
+    backgroundColor: '#fcfffe',
+  },
+  noteItemTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 4,
+  },
+  noteItemMeta: {
+    fontSize: 13,
+    color: '#6b7280',
+  },
+});
