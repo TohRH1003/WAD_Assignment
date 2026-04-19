@@ -1,17 +1,11 @@
 import React, {useEffect, useState} from 'react';
-import {
-  Alert,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import {Alert, ScrollView, Text, View} from 'react-native';
 import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {getUserByUsername} from '../DatabaseOperation/Authentication';
 import {UpdateUserInfo} from '../DatabaseOperation/UpdateUser';
 import {RootStackParamList} from '../AppStackTypes';
+import {MyButton, MyTextInput} from '../components/MyCustomComponent';
 import {appStyles as styles} from '../styles/AppStyles';
 
 type EditFormState = {
@@ -36,6 +30,7 @@ const EditScreen = () => {
   const {username} = route.params;
   const [form, setForm] = useState<EditFormState>(emptyForm);
   const [isSaving, setIsSaving] = useState(false);
+  const [isPasswordEditable, setIsPasswordEditable] = useState(false);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -67,29 +62,47 @@ const EditScreen = () => {
     setForm(prev => ({...prev, [field]: value}));
   };
 
+  const togglePasswordEdit = () => {
+    setIsPasswordEditable(prev => {
+      const nextValue = !prev;
+
+      if (!nextValue) {
+        setForm(current => ({
+          ...current,
+          password: '',
+          confirmPassword: '',
+        }));
+      }
+
+      return nextValue;
+    });
+  };
+
   const renderInput = (
     label: string,
     field: keyof EditFormState,
     options?: {secureTextEntry?: boolean; editable?: boolean},
   ) => (
-    <View style={styles.inputGroup}>
-      <Text style={styles.inputLabel}>{label}</Text>
-      <TextInput
-        value={form[field]}
-        onChangeText={value => updateForm(field, value)}
-        secureTextEntry={options?.secureTextEntry}
-        editable={options?.editable ?? true}
-        style={[
-          styles.input,
-          options?.editable === false ? styles.inputDisabled : null,
-        ]}
-        autoCapitalize="none"
-      />
-    </View>
+    <MyTextInput
+      label={label}
+      value={form[field]}
+      onChangeText={value => updateForm(field, value)}
+      secureTextEntry={options?.secureTextEntry}
+      editable={options?.editable ?? true}
+      autoCapitalize="none"
+    />
   );
 
   const handleSave = async () => {
-    if (form.password !== form.confirmPassword) {
+    if (isPasswordEditable && (!form.password.trim() || !form.confirmPassword.trim())) {
+      Alert.alert(
+        'Password required',
+        'Password and confirm password cannot be empty.',
+      );
+      return;
+    }
+
+    if (isPasswordEditable && form.password !== form.confirmPassword) {
       Alert.alert(
         'Password mismatch',
         'Password and confirm password must match.',
@@ -99,7 +112,12 @@ const EditScreen = () => {
 
     try {
       setIsSaving(true);
-      await UpdateUserInfo(form.username, form.password, form.name, form.email);
+      await UpdateUserInfo(
+        form.username,
+        isPasswordEditable ? form.password : null,
+        form.name,
+        form.email,
+      );
       Alert.alert('Profile updated', 'Your account details have been saved.', [
         {
           text: 'OK',
@@ -121,29 +139,35 @@ const EditScreen = () => {
 
       <View style={styles.card}>
         {renderInput('Username', 'username', {editable: false})}
-        {renderInput('Password', 'password', {secureTextEntry: true})}
-        {renderInput('Confirm Password', 'confirmPassword', {
-          secureTextEntry: true,
-        })}
+
         {renderInput('Full Name', 'name')}
         {renderInput('Email', 'email')}
 
-        <TouchableOpacity
-          style={styles.primaryButton}
+        <MyButton
+          title={isPasswordEditable ? 'Lock Password Field' : 'Edit Password'}
+          variant="secondary"
+          onPress={togglePasswordEdit}
+        />
+        {renderInput('Password', 'password', {
+          secureTextEntry: true,
+          editable: isPasswordEditable,
+        })}
+        {renderInput('Confirm Password', 'confirmPassword', {
+          secureTextEntry: true,
+          editable: isPasswordEditable,
+        })}
+
+        <MyButton
+          title={isSaving ? 'Saving...' : 'Save Changes'}
           onPress={handleSave}
           disabled={isSaving}
-          activeOpacity={0.8}>
-          <Text style={styles.primaryButtonText}>
-            {isSaving ? 'Saving...' : 'Save Changes'}
-          </Text>
-        </TouchableOpacity>
+        />
 
-        <TouchableOpacity
-          style={styles.secondaryButton}
+        <MyButton
+          title="Cancel"
+          variant="secondary"
           onPress={() => navigation.navigate('Profile', {username})}
-          activeOpacity={0.8}>
-          <Text style={styles.secondaryButtonText}>Cancel</Text>
-        </TouchableOpacity>
+        />
       </View>
     </ScrollView>
   );

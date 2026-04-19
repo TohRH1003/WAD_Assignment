@@ -1,24 +1,8 @@
 import React, {useEffect, useState} from 'react';
-import {
-  Alert,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import {StackNavigationProp} from '@react-navigation/stack';
-import {useNavigation} from '@react-navigation/native';
+import {Alert, ScrollView, Text, View} from 'react-native';
 import {initializeDatabase, InsertUser} from '../DatabaseOperation/InsertValue';
-import QuoteCard from '../components/QuoteCard';
-import {getDailyQuote} from '../services/cloudService';
-import {RootStackParamList} from '../AppStackTypes';
+import {MyButton, MyTextInput} from '../components/MyCustomComponent';
 import {appStyles as styles} from '../styles/AppStyles';
-
-type QuoteInfo = {
-  day: string;
-  quote: string;
-};
 
 type RegisterFormState = {
   username: string;
@@ -34,28 +18,12 @@ const emptyForm: RegisterFormState = {
   email: '',
 };
 
-const RegisterScreen = ({navigation}:any) => {
+const RegisterScreen = ({navigation}: any) => {
   const [form, setForm] = useState<RegisterFormState>(emptyForm);
-  const [quoteInfo, setQuoteInfo] = useState<QuoteInfo | null>(null);
   const [isAuthSubmitting, setIsAuthSubmitting] = useState(false);
-  const [isLoadingQuote, setIsLoadingQuote] = useState(true);
 
   useEffect(() => {
-    const loadQuote = async () => {
-      try {
-        setIsLoadingQuote(true);
-        const quote = await getDailyQuote();
-        setQuoteInfo(quote);
-      } catch (error) {
-        console.log('Quote load error:', error);
-        setQuoteInfo(null);
-      } finally {
-        setIsLoadingQuote(false);
-      }
-    };
-
     initializeDatabase();
-    loadQuote();
   }, []);
 
   const updateForm = (field: keyof RegisterFormState, value: string) => {
@@ -84,67 +52,47 @@ const RegisterScreen = ({navigation}:any) => {
   return (
     <ScrollView contentContainerStyle={styles.content}>
       <Text style={styles.title}>Note Taking App</Text>
-      <QuoteCard isLoading={isLoadingQuote} quoteInfo={quoteInfo} />
 
       <View style={styles.card}>
-        <View style={styles.inputGroup}>
-          <Text style={styles.inputLabel}>Username</Text>
-          <TextInput
-            value={form.username}
-            onChangeText={value => updateForm('username', value)}
-            style={styles.input}
-            autoCapitalize="none"
-          />
-        </View>
+        <MyTextInput
+          label="Username"
+          value={form.username}
+          onChangeText={value => updateForm('username', value)}
+          autoCapitalize="none"
+        />
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.inputLabel}>Password</Text>
-          <TextInput
-            value={form.password}
-            onChangeText={value => updateForm('password', value)}
-            secureTextEntry
-            style={styles.input}
-            autoCapitalize="none"
-          />
-        </View>
+        <MyTextInput
+          label="Password"
+          value={form.password}
+          onChangeText={value => updateForm('password', value)}
+          secureTextEntry
+          autoCapitalize="none"
+        />
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.inputLabel}>Full Name</Text>
-          <TextInput
-            value={form.name}
-            onChangeText={value => updateForm('name', value)}
-            style={styles.input}
-          />
-        </View>
+        <MyTextInput
+          label="Full Name"
+          value={form.name}
+          onChangeText={value => updateForm('name', value)}
+        />
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.inputLabel}>Email</Text>
-          <TextInput
-            value={form.email}
-            onChangeText={value => updateForm('email', value)}
-            style={styles.input}
-            autoCapitalize="none"
-          />
-        </View>
+        <MyTextInput
+          label="Email"
+          value={form.email}
+          onChangeText={value => updateForm('email', value)}
+          autoCapitalize="none"
+        />
 
-        <TouchableOpacity
-          style={styles.primaryButton}
+        <MyButton
+          title={isAuthSubmitting ? 'Please wait...' : 'Create Account'}
           onPress={handleRegister}
           disabled={isAuthSubmitting}
-          activeOpacity={0.8}>
-          <Text style={styles.primaryButtonText}>
-            {isAuthSubmitting ? 'Please wait...' : 'Create Account'}
-          </Text>
-        </TouchableOpacity>
+        />
 
-        <TouchableOpacity
-          style={styles.linkButton}
+        <MyButton
+          title="Already have an account? Log In"
+          variant="link"
           onPress={() => navigation.navigate('Login')}
-          activeOpacity={0.8}>
-          <Text style={styles.subtitle}>
-            Already have an account? <Text style={styles.subtitle}>Log In</Text>
-          </Text>
-        </TouchableOpacity>
+        />
       </View>
     </ScrollView>
   );

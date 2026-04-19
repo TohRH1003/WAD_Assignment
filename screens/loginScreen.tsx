@@ -1,15 +1,9 @@
 import React, {useEffect, useState} from 'react';
-import {
-  Alert,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import {Alert, ScrollView, Text, View} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import {loginUser} from '../DatabaseOperation/Authentication';
 import {initializeDatabase} from '../DatabaseOperation/InsertValue';
+import {MyButton, MyTextInput} from '../components/MyCustomComponent';
 import QuoteCard from '../components/QuoteCard';
 import {getDailyQuote} from '../services/cloudService';
 import {appStyles as styles} from '../styles/AppStyles';
@@ -87,46 +81,32 @@ const LoginScreen = ({navigation}: any) => {
       <QuoteCard isLoading={isLoadingQuote} quoteInfo={quoteInfo} />
 
       <View style={styles.card}>
-        <View style={styles.inputGroup}>
-          <Text style={styles.inputLabel}>Username</Text>
-          <TextInput
-            value={form.username}
-            onChangeText={value => updateForm('username', value)}
-            style={styles.input}
-            autoCapitalize="none"
-          />
-        </View>
+        <MyTextInput
+          label="Username"
+          value={form.username}
+          onChangeText={value => updateForm('username', value)}
+          autoCapitalize="none"
+        />
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.inputLabel}>Password</Text>
-          <TextInput
-            value={form.password}
-            onChangeText={value => updateForm('password', value)}
-            secureTextEntry
-            style={styles.input}
-            autoCapitalize="none"
-          />
-        </View>
+        <MyTextInput
+          label="Password"
+          value={form.password}
+          onChangeText={value => updateForm('password', value)}
+          secureTextEntry
+          autoCapitalize="none"
+        />
 
-        <TouchableOpacity
-          style={styles.primaryButton}
+        <MyButton
+          title={isAuthSubmitting ? 'Please wait...' : 'Log In'}
           onPress={handleLogin}
           disabled={isAuthSubmitting}
-          activeOpacity={0.8}>
-          <Text style={styles.primaryButtonText}>
-            {isAuthSubmitting ? 'Please wait...' : 'Log In'}
-          </Text>
-        </TouchableOpacity>
+        />
 
-        <TouchableOpacity
-          style={styles.linkButton}
+        <MyButton
+          title="Don't have an account? Create Account"
+          variant="link"
           onPress={() => navigation.navigate('Register')}
-          activeOpacity={0.8}>
-          <Text style={styles.subtitle}>
-            Don't have an account?{' '}
-            <Text style={styles.subtitle}>Create Account</Text>
-          </Text>
-        </TouchableOpacity>
+        />
       </View>
     </ScrollView>
   );

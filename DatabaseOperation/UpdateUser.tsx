@@ -30,7 +30,7 @@ const normalizeSqliteError = (error: any) => {
 
 export const UpdateUserInfo = (
   username: string,
-  password: string,
+  password: string | null,
   name: string,
   email: string,
 ) => {
@@ -41,11 +41,6 @@ export const UpdateUserInfo = (
 
     if (!trimmedUsername) {
       reject(new Error('Username is required'));
-      return;
-    }
-
-    if (!password.trim()) {
-      reject(new Error('Password is required'));
       return;
     }
 
@@ -65,12 +60,22 @@ export const UpdateUserInfo = (
       return;
     }
 
+    const trimmedPassword = password?.trim();
+    const query = trimmedPassword
+      ? `UPDATE User
+         SET password = ?, name = ?, email = ?
+         WHERE username = ?`
+      : `UPDATE User
+         SET name = ?, email = ?
+         WHERE username = ?`;
+    const params = trimmedPassword
+      ? [trimmedPassword, trimmedName, trimmedEmail, trimmedUsername]
+      : [trimmedName, trimmedEmail, trimmedUsername];
+
     db.transaction(tx => {
       tx.executeSql(
-        `UPDATE User
-         SET password = ?, name = ?, email = ?
-         WHERE username = ?`,
-        [password, trimmedName, trimmedEmail, trimmedUsername],
+        query,
+        params,
         (_, results) => {
           if (results.rowsAffected > 0) {
             resolve({

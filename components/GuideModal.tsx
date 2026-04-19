@@ -1,5 +1,6 @@
 import React from 'react';
-import {Modal, Text, TouchableOpacity, View} from 'react-native';
+import {Modal, Text, View} from 'react-native';
+import {MyButton} from './MyCustomComponent';
 import {appStyles as styles} from '../styles/AppStyles';
 
 type GuideInfo = {
@@ -30,12 +31,7 @@ const GuideModal = ({guideInfo, visible, onClose}: GuideModalProps) => {
               {index + 1}. {step}
             </Text>
           ))}
-          <TouchableOpacity
-            style={styles.primaryButton}
-            onPress={onClose}
-            activeOpacity={0.8}>
-            <Text style={styles.primaryButtonText}>Close</Text>
-          </TouchableOpacity>
+          <MyButton title="Close" onPress={onClose} />
         </View>
       </View>
     </Modal>

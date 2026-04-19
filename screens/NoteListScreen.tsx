@@ -1,8 +1,9 @@
 import React from 'react';
 import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
-import {ScrollView, Text, TouchableOpacity, View} from 'react-native';
+import {ScrollView, Text, View} from 'react-native';
 import {RootStackParamList} from '../AppStackTypes';
+import {MyButton} from '../components/MyCustomComponent';
 import {appStyles as styles} from '../styles/AppStyles';
 
 const NoteListScreen = () => {
@@ -17,12 +18,11 @@ const NoteListScreen = () => {
           <Text style={styles.title}>My Note</Text>
           <Text style={styles.subtitle}>Welcome, {username}</Text>
         </View>
-        <TouchableOpacity
-          style={styles.headerGuideButton}
+        <MyButton
+          title="User Profile"
+          variant="header"
           onPress={() => navigation.navigate('Profile', {username})}
-          activeOpacity={0.8}>
-          <Text style={styles.headerGuideButtonText}>User Profile</Text>
-        </TouchableOpacity>
+        />
       </View>
 
       <View style={styles.card}>

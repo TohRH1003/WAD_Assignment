@@ -1,5 +1,5 @@
 import React, {useCallback, useState} from 'react';
-import {Alert, ScrollView, Text, TouchableOpacity, View} from 'react-native';
+import {Alert, ScrollView, Text, View} from 'react-native';
 import {
   RouteProp,
   useFocusEffect,
@@ -9,6 +9,7 @@ import {
 import {StackNavigationProp} from '@react-navigation/stack';
 import {getUserByUsername} from '../DatabaseOperation/Authentication';
 import GuideModal from '../components/GuideModal';
+import {MyButton} from '../components/MyCustomComponent';
 import QuoteCard from '../components/QuoteCard';
 import {getAppGuide, getDailyQuote} from '../services/cloudService';
 import {RootStackParamList} from '../AppStackTypes';
@@ -139,21 +140,18 @@ const ProfileScreen = () => {
   );
 
   return (
-    <>
+      <>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.pageHeaderRow}>
           <View style={styles.pageHeaderTextWrap}>
             <Text style={styles.title}>User Profile</Text>
           </View>
-          <TouchableOpacity
-            style={styles.headerGuideButton}
+          <MyButton
+            title={isGuideLoading ? 'Loading...' : 'Guide'}
+            variant="header"
             onPress={handleOpenGuide}
             disabled={isGuideLoading}
-            activeOpacity={0.8}>
-            <Text style={styles.headerGuideButtonText}>
-              {isGuideLoading ? 'Loading...' : 'Guide'}
-            </Text>
-          </TouchableOpacity>
+          />
         </View>
         <QuoteCard isLoading={isLoadingQuote} quoteInfo={quoteInfo} />
 
@@ -162,30 +160,22 @@ const ProfileScreen = () => {
           {renderInfoRow('Full Name', profile.name)}
           {renderInfoRow('Email', profile.email)}
 
-          <TouchableOpacity
-            style={styles.primaryButton}
+          <MyButton
+            title="Edit Profile"
             onPress={() =>
               navigation.navigate('Edit', {username: profile.username})
             }
-            activeOpacity={0.8}>
-            <Text style={styles.primaryButtonText}>Edit Profile</Text>
-          </TouchableOpacity>
+          />
 
-          <TouchableOpacity
-            style={styles.secondaryButton}
+          <MyButton
+            title="Back To Notes"
+            variant="secondary"
             onPress={() =>
               navigation.navigate('NoteList', {username: profile.username})
             }
-            activeOpacity={0.8}>
-            <Text style={styles.secondaryButtonText}>Back To Notes</Text>
-          </TouchableOpacity>
+          />
 
-          <TouchableOpacity
-            style={styles.linkButton}
-            onPress={handleLogout}
-            activeOpacity={0.8}>
-            <Text style={styles.linkButtonText}>Log Out</Text>
-          </TouchableOpacity>
+          <MyButton title="Log Out" variant="link" onPress={handleLogout} />
         </View>
       </ScrollView>
 

@@ -6,7 +6,7 @@ import LoginScreen from './screens/loginScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import NoteListScreen from './screens/NoteListScreen';
 import ProfileScreen from './screens/ProfileScreen';
-import EditScreen from './screens/EditScreen';
+import EditScreen from './screens/EditProfileScreen';
 import {appStyles as styles} from './styles/AppStyles';
 import {RootStackParamList} from './AppStackTypes';
 
