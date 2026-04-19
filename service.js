@@ -16,11 +16,11 @@ const quotesByDay = {
 const guide = {
   title: 'Note Taking App Guide',
   steps: [
-    'Create an account if you are a new user.',
-    'Log in with your username and password.',
-    'Open your profile page to review your account details.',
-    'Use the guide button anytime if you need a quick reminder.',
-    'Start creating folders and notes after login.',
+    'Create a new note by clicking the "New Note" button.',
+    'Organize your notes into folders for easy access.',
+    'Use pinning to keep important notes at the top of your list.',
+    'Search for notes using keywords to quickly find what you need.',
+    'Use note templates to save time on recurring note formats.',
     'Edit your account details from the profile screen when needed.',
   ],
 };
