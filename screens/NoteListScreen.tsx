@@ -6,8 +6,7 @@ import {RootStackParamList} from '../AppStackTypes';
 import {MyButton} from '../components/MyCustomComponent';
 import {appStyles as styles} from '../styles/AppStyles';
 
-const NoteListScreen = () => {
-  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+const NoteListScreen = ({navigation}:any) => {
   const route = useRoute<RouteProp<RootStackParamList, 'NoteList'>>();
   const {username} = route.params;
 
