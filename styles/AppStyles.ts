@@ -61,16 +61,23 @@ export const appStyles = StyleSheet.create({
     marginBottom: 8,
     textTransform: 'uppercase',
   },
+  quoteContent: {
+    width: '100%',
+    minWidth: 0,
+  },
   quoteDay: {
     fontSize: 20,
     fontWeight: '700',
     color: '#111827',
     marginBottom: 6,
+    flexShrink: 1,
   },
   quoteText: {
     fontSize: 15,
     lineHeight: 22,
     color: '#374151',
+    flexShrink: 1,
+    width: '100%',
   },
   segmentRow: {
     flexDirection: 'row',
