@@ -24,7 +24,6 @@ import {MyButton} from '../components/MyCustomComponent';
 import {appStyles as styles} from '../styles/AppStyles';
 import {ReadNoteData} from '../DatabaseOperation/RetrieveData';
 
-<<<<<<< HEAD
 type RoutePropType = RouteProp<RootStackParamList, 'NoteList'>;
 
 interface NoteRow {
@@ -51,10 +50,14 @@ const formatDate = (iso: string): string => {
 
 const NoteListScreen = ({navigation}: any) => {
   const route = useRoute<RoutePropType>();
-=======
-const NoteListScreen = ({navigation}:any) => {
-  const route = useRoute<RouteProp<RootStackParamList, 'NoteList'>>();
->>>>>>> f949056ae0cd80c1d1628ed2fdeb8670bc3862fa
+// =======
+// const NoteListScreen = ({navigation}:any) => {
+//   const route = useRoute<RouteProp<RootStackParamList, 'NoteList'>>();
+// >>>>>>> f949056ae0cd80c1d1628ed2fdeb8670bc3862fa
+// I only addede this part to the comment to solve the merge conlict,
+// please make the necessary changes if needed.
+
+
   const {username} = route.params;
 
   const [notes, setNotes] = useState<NoteRow[]>([]);
