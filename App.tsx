@@ -7,6 +7,7 @@ import RegisterScreen from './screens/RegisterScreen';
 import NoteListScreen from './screens/NoteListScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import EditScreen from './screens/EditProfileScreen';
+import NoteEditorScreen from './screens/NoteEditorScreen';
 import {appStyles as styles} from './styles/AppStyles';
 import {RootStackParamList} from './AppStackTypes';
 
@@ -24,6 +25,7 @@ const App = () => {
           <Stack.Screen name="NoteList" component={NoteListScreen} />
           <Stack.Screen name="Profile" component={ProfileScreen} />
           <Stack.Screen name="Edit" component={EditScreen} />
+          <Stack.Screen name="NoteEditor" component={NoteEditorScreen} />
         </Stack.Navigator>
       </SafeAreaView>
     </NavigationContainer>
