@@ -4,13 +4,13 @@ const {URL} = require('url');
 const PORT = 3000;
 
 const quotesByDay = {
-  Monday: 'A small note today can save a big idea tomorrow.',
-  Tuesday: 'Keep writing. Progress grows one page at a time.',
-  Wednesday: 'Midweek clarity starts with capturing the thought.',
-  Thursday: 'Organized notes turn busy days into manageable ones.',
-  Friday: 'Finish strong by writing down what matters most.',
-  Saturday: 'Rest your mind by storing ideas before they drift away.',
-  Sunday: 'Plan the week ahead with notes that keep you focused.',
+  Monday: 'Write it down before it slips away.',
+  Tuesday: 'Small notes build big progress.',
+  Wednesday: 'Capture the thought while it is clear.',
+  Thursday: 'Organized notes make busy days easier.',
+  Friday: 'End the week with your priorities written down.',
+  Saturday: 'Store ideas now and relax later.',
+  Sunday: 'Plan ahead with simple, focused notes.',
 };
 
 const guide = {

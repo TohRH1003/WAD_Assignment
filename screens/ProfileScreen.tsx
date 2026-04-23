@@ -37,8 +37,7 @@ const emptyProfile: UserProfile = {
   email: '',
 };
 
-const ProfileScreen = () => {
-  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+const ProfileScreen = ({navigation}:any) => {
   const route = useRoute<RouteProp<RootStackParamList, 'Profile'>>();
   const {username} = route.params;
   const [profile, setProfile] = useState<UserProfile>(emptyProfile);

@@ -24,8 +24,7 @@ const emptyForm: EditFormState = {
   email: '',
 };
 
-const EditScreen = () => {
-  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+const EditScreen = ({navigation}:any) => {
   const route = useRoute<RouteProp<RootStackParamList, 'Edit'>>();
   const {username} = route.params;
   const [form, setForm] = useState<EditFormState>(emptyForm);

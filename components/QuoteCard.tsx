@@ -23,10 +23,10 @@ const QuoteCard = ({isLoading, quoteInfo}: QuoteCardProps) => {
       {isLoading ? (
         <ActivityIndicator color="#0f766e" />
       ) : (
-        <>
+        <View style={styles.quoteContent}>
           <Text style={styles.quoteDay}>{quoteInfo?.day}</Text>
           <Text style={styles.quoteText}>{quoteInfo?.quote}</Text>
-        </>
+        </View>
       )}
     </View>
   );
