@@ -1,7 +1,7 @@
 const http = require('http');
 const {URL} = require('url');
 
-const PORT = 3000;
+const PORT = 5000;
 
 const quotesByDay = {
   Monday: 'Write it down before it slips away.',
