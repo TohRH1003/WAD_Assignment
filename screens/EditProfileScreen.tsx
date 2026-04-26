@@ -1,10 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {Alert, ScrollView, Text, View} from 'react-native';
-import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
-import {StackNavigationProp} from '@react-navigation/stack';
 import {getUserByUsername} from '../DatabaseOperation/Authentication';
 import {UpdateUserInfo} from '../DatabaseOperation/UpdateUser';
-import {RootStackParamList} from '../AppStackTypes';
 import {MyButton, MyTextInput} from '../components/MyCustomComponent';
 import {appStyles as styles} from '../styles/AppStyles';
 
@@ -24,8 +21,7 @@ const emptyForm: EditFormState = {
   email: '',
 };
 
-const EditScreen = ({navigation}:any) => {
-  const route = useRoute<RouteProp<RootStackParamList, 'Edit'>>();
+const EditScreen = ({navigation, route}: any) => {
   const {username} = route.params;
   const [form, setForm] = useState<EditFormState>(emptyForm);
   const [isSaving, setIsSaving] = useState(false);

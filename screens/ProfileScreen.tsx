@@ -1,18 +1,11 @@
 import React, {useCallback, useState} from 'react';
 import {Alert, ScrollView, Text, View} from 'react-native';
-import {
-  RouteProp,
-  useFocusEffect,
-  useNavigation,
-  useRoute,
-} from '@react-navigation/native';
-import {StackNavigationProp} from '@react-navigation/stack';
+import {useFocusEffect} from '@react-navigation/native';
 import {getUserByUsername} from '../DatabaseOperation/Authentication';
 import GuideModal from '../components/GuideModal';
 import {MyButton} from '../components/MyCustomComponent';
 import QuoteCard from '../components/QuoteCard';
 import {getAppGuide, getDailyQuote} from '../services/cloudService';
-import {RootStackParamList} from '../AppStackTypes';
 import {appStyles as styles} from '../styles/AppStyles';
 
 type QuoteInfo = {
@@ -37,8 +30,7 @@ const emptyProfile: UserProfile = {
   email: '',
 };
 
-const ProfileScreen = ({navigation}:any) => {
-  const route = useRoute<RouteProp<RootStackParamList, 'Profile'>>();
+const ProfileScreen = ({navigation, route}: any) => {
   const {username} = route.params;
   const [profile, setProfile] = useState<UserProfile>(emptyProfile);
   const [quoteInfo, setQuoteInfo] = useState<QuoteInfo | null>(null);
