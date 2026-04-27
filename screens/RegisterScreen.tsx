@@ -11,6 +11,28 @@ const RegisterScreen = ({navigation}: any) => {
   const [email, setEmail] = useState('');
   const [isAuthSubmitting, setIsAuthSubmitting] = useState(false);
 
+  const checkFieldIsEmpty = () => {
+    return !username || !password || !name || !email;
+  }
+
+  const checkEmailFormat = () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
+  const validateInput = () => {
+    if (checkFieldIsEmpty()) {
+      return'Validation Error Please fill in all the required fields.';
+    }
+
+    if (!checkEmailFormat()) {
+      return 'Validation Error, Please enter a valid email address.';
+      
+    }
+
+    return "Username is unavailable, Please choose a different username.";
+  }
+
   useEffect(() => {
     initializeDatabase();
   }, []);
@@ -31,7 +53,7 @@ const RegisterScreen = ({navigation}: any) => {
     } catch (error: any) {
       Alert.alert(
         'Create account failed',
-        'User with the same username already exists.',
+          validateInput()
       );
     } finally {
       setIsAuthSubmitting(false);
