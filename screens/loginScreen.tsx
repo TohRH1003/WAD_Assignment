@@ -13,18 +13,9 @@ type QuoteInfo = {
   quote: string;
 };
 
-type LoginFormState = {
-  username: string;
-  password: string;
-};
-
-const emptyForm: LoginFormState = {
-  username: '',
-  password: '',
-};
-
 const LoginScreen = ({navigation}: any) => {
-  const [form, setForm] = useState<LoginFormState>(emptyForm);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [quoteInfo, setQuoteInfo] = useState<QuoteInfo | null>(null);
   const [isAuthSubmitting, setIsAuthSubmitting] = useState(false);
   const [isLoadingQuote, setIsLoadingQuote] = useState(true);
@@ -49,18 +40,15 @@ const LoginScreen = ({navigation}: any) => {
 
   useFocusEffect(
     React.useCallback(() => {
-      setForm(emptyForm);
+      setUsername('');
+      setPassword('');
     }, []),
   );
-
-  const updateForm = (field: keyof LoginFormState, value: string) => {
-    setForm(prev => ({...prev, [field]: value}));
-  };
 
   const handleLogin = async () => {
     try {
       setIsAuthSubmitting(true);
-      const user = await loginUser(form.username, form.password);
+      const user = await loginUser(username, password);
 
       if (!user) {
         Alert.alert('Login failed', 'Invalid username or password.');
@@ -83,15 +71,15 @@ const LoginScreen = ({navigation}: any) => {
       <View style={styles.card}>
         <MyTextInput
           label="Username"
-          value={form.username}
-          onChangeText={value => updateForm('username', value)}
+          value={username}
+          onChangeText={setUsername}
           autoCapitalize="none"
         />
 
         <MyTextInput
           label="Password"
-          value={form.password}
-          onChangeText={value => updateForm('password', value)}
+          value={password}
+          onChangeText={setPassword}
           secureTextEntry
           autoCapitalize="none"
         />

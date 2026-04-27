@@ -5,25 +5,13 @@ import {UpdateUserInfo} from '../DatabaseOperation/UpdateUser';
 import {MyButton, MyTextInput} from '../components/MyCustomComponent';
 import {appStyles as styles} from '../styles/AppStyles';
 
-type EditFormState = {
-  username: string;
-  password: string;
-  confirmPassword: string;
-  name: string;
-  email: string;
-};
-
-const emptyForm: EditFormState = {
-  username: '',
-  password: '',
-  confirmPassword: '',
-  name: '',
-  email: '',
-};
-
 const EditScreen = ({navigation, route}: any) => {
   const {username} = route.params;
-  const [form, setForm] = useState<EditFormState>(emptyForm);
+  const [formUsername, setFormUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [isPasswordEditable, setIsPasswordEditable] = useState(false);
 
@@ -38,13 +26,11 @@ const EditScreen = ({navigation, route}: any) => {
           return;
         }
 
-        setForm({
-          username: user.username,
-          password: '',
-          confirmPassword: '',
-          name: user.name,
-          email: user.email,
-        });
+        setFormUsername(user.username);
+        setPassword('');
+        setConfirmPassword('');
+        setName(user.name);
+        setEmail(user.email);
       } catch (error: any) {
         Alert.alert('Load failed', error.message || 'Unable to load user.');
       }
@@ -53,43 +39,21 @@ const EditScreen = ({navigation, route}: any) => {
     loadUser();
   }, [navigation, username]);
 
-  const updateForm = (field: keyof EditFormState, value: string) => {
-    setForm(prev => ({...prev, [field]: value}));
-  };
-
   const togglePasswordEdit = () => {
     setIsPasswordEditable(prev => {
       const nextValue = !prev;
 
       if (!nextValue) {
-        setForm(current => ({
-          ...current,
-          password: '',
-          confirmPassword: '',
-        }));
+        setPassword('');
+        setConfirmPassword('');
       }
 
       return nextValue;
     });
   };
 
-  const renderInput = (
-    label: string,
-    field: keyof EditFormState,
-    options?: {secureTextEntry?: boolean; editable?: boolean},
-  ) => (
-    <MyTextInput
-      label={label}
-      value={form[field]}
-      onChangeText={value => updateForm(field, value)}
-      secureTextEntry={options?.secureTextEntry}
-      editable={options?.editable ?? true}
-      autoCapitalize="none"
-    />
-  );
-
   const handleSave = async () => {
-    if (isPasswordEditable && (!form.password.trim() || !form.confirmPassword.trim())) {
+    if (isPasswordEditable && (!password.trim() || !confirmPassword.trim())) {
       Alert.alert(
         'Password required',
         'Password and confirm password cannot be empty.',
@@ -97,7 +61,7 @@ const EditScreen = ({navigation, route}: any) => {
       return;
     }
 
-    if (isPasswordEditable && form.password !== form.confirmPassword) {
+    if (isPasswordEditable && password !== confirmPassword) {
       Alert.alert(
         'Password mismatch',
         'Password and confirm password must match.',
@@ -108,16 +72,16 @@ const EditScreen = ({navigation, route}: any) => {
     try {
       setIsSaving(true);
       await UpdateUserInfo(
-        form.username,
-        isPasswordEditable ? form.password : null,
-        form.name,
-        form.email,
+        formUsername,
+        isPasswordEditable ? password : null,
+        name,
+        email,
       );
       Alert.alert('Profile updated', 'Your account details have been saved.', [
         {
           text: 'OK',
           onPress: () =>
-            navigation.navigate('Profile', {username: form.username}),
+            navigation.navigate('Profile', {username: formUsername}),
         },
       ]);
     } catch (error: any) {
@@ -133,24 +97,48 @@ const EditScreen = ({navigation, route}: any) => {
       <Text style={styles.subtitle}>Update your account information here</Text>
 
       <View style={styles.card}>
-        {renderInput('Username', 'username', {editable: false})}
+        <MyTextInput
+          label="Username"
+          value={formUsername}
+          onChangeText={setFormUsername}
+          editable={false}
+          autoCapitalize="none"
+        />
 
-        {renderInput('Full Name', 'name')}
-        {renderInput('Email', 'email')}
+        <MyTextInput
+          label="Full Name"
+          value={name}
+          onChangeText={setName}
+          autoCapitalize="none"
+        />
+        <MyTextInput
+          label="Email"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+        />
 
         <MyButton
           title={isPasswordEditable ? 'Lock Password Field' : 'Edit Password'}
           variant="secondary"
           onPress={togglePasswordEdit}
         />
-        {renderInput('Password', 'password', {
-          secureTextEntry: true,
-          editable: isPasswordEditable,
-        })}
-        {renderInput('Confirm Password', 'confirmPassword', {
-          secureTextEntry: true,
-          editable: isPasswordEditable,
-        })}
+        <MyTextInput
+          label="Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          editable={isPasswordEditable}
+          autoCapitalize="none"
+        />
+        <MyTextInput
+          label="Confirm Password"
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry
+          editable={isPasswordEditable}
+          autoCapitalize="none"
+        />
 
         <MyButton
           title={isSaving ? 'Saving...' : 'Save Changes'}

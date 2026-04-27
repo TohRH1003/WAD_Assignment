@@ -4,40 +4,29 @@ import {initializeDatabase, InsertUser} from '../DatabaseOperation/InsertValue';
 import {MyButton, MyTextInput} from '../components/MyCustomComponent';
 import {appStyles as styles} from '../styles/AppStyles';
 
-type RegisterFormState = {
-  username: string;
-  password: string;
-  name: string;
-  email: string;
-};
-
-const emptyForm: RegisterFormState = {
-  username: '',
-  password: '',
-  name: '',
-  email: '',
-};
-
 const RegisterScreen = ({navigation}: any) => {
-  const [form, setForm] = useState<RegisterFormState>(emptyForm);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [isAuthSubmitting, setIsAuthSubmitting] = useState(false);
 
   useEffect(() => {
     initializeDatabase();
   }, []);
 
-  const updateForm = (field: keyof RegisterFormState, value: string) => {
-    setForm(prev => ({...prev, [field]: value}));
-  };
-
   const handleRegister = async () => {
     try {
       setIsAuthSubmitting(true);
-      await InsertUser(form.username, form.password, form.name, form.email);
+      await InsertUser(username, password, name, email);
       Alert.alert(
         'Account created',
         'Your account has been created successfully.',
       );
+      setUsername('');
+      setPassword('');
+      setName('');
+      setEmail('');
       navigation.navigate('Login');
     } catch (error: any) {
       Alert.alert(
@@ -56,29 +45,29 @@ const RegisterScreen = ({navigation}: any) => {
       <View style={styles.card}>
         <MyTextInput
           label="Username"
-          value={form.username}
-          onChangeText={value => updateForm('username', value)}
+          value={username}
+          onChangeText={setUsername}
           autoCapitalize="none"
         />
 
         <MyTextInput
           label="Password"
-          value={form.password}
-          onChangeText={value => updateForm('password', value)}
+          value={password}
+          onChangeText={setPassword}
           secureTextEntry
           autoCapitalize="none"
         />
 
         <MyTextInput
           label="Full Name"
-          value={form.name}
-          onChangeText={value => updateForm('name', value)}
+          value={name}
+          onChangeText={setName}
         />
 
         <MyTextInput
           label="Email"
-          value={form.email}
-          onChangeText={value => updateForm('email', value)}
+          value={email}
+          onChangeText={setEmail}
           autoCapitalize="none"
         />
 
