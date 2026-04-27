@@ -1,6 +1,12 @@
-export type RootStackParamList = {
+import {NavigatorScreenParams} from '@react-navigation/native';
+
+export type AuthTabParamList = {
   Login: undefined;
   Register: undefined;
+};
+
+export type RootStackParamList = {
+  Auth: NavigatorScreenParams<AuthTabParamList> | undefined;
   NoteList: {username: string};
   Profile: {username: string};
   Edit: {username: string};

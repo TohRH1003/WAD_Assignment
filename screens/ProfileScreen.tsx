@@ -50,7 +50,7 @@ const ProfileScreen = ({navigation, route}: any) => {
               'User not found',
               'Unable to load profile information.',
             );
-            navigation.navigate('Login');
+            navigation.navigate('Auth', {screen: 'Login'});
             return;
           }
 
@@ -115,7 +115,7 @@ const ProfileScreen = ({navigation, route}: any) => {
         style: 'destructive',
         onPress: () => {
           setProfile(emptyProfile);
-          navigation.navigate('Login');
+          navigation.navigate('Auth', {screen: 'Login'});
         },
       },
     ]);
