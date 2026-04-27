@@ -20,7 +20,7 @@ import {
   View,
 } from 'react-native';
 import {RouteProp, useFocusEffect, useRoute} from '@react-navigation/native';
-import {RootStackParamList} from '../AppStackTypes';
+import {MainDrawerParamList} from '../AppStackTypes';
 import {MyButton} from '../components/MyCustomComponent';
 import {appStyles as styles} from '../styles/AppStyles';
 import {
@@ -29,7 +29,7 @@ import {
   SoftDeleteNote,
 } from '../DatabaseOperation/RetrieveData';
 
-type RoutePropType = RouteProp<RootStackParamList, 'NoteList'>;
+type RoutePropType = RouteProp<MainDrawerParamList, 'NoteList'>;
 
 interface NoteRow {
   note_id: number;

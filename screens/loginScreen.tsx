@@ -67,7 +67,10 @@ const LoginScreen = ({navigation}: any) => {
         return;
       }
 
-      navigation.navigate('NoteList', {username: user.username});
+      navigation.navigate('MainDrawer', {
+        screen: 'NoteList',
+        params: {username: user.username},
+      });
     } catch (error: any) {
       Alert.alert('Login failed', error.message || 'Please try again.');
     } finally {
