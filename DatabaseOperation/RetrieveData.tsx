@@ -127,3 +127,57 @@ export const ReadFolderData = (folder_id: number) => {
     });
   });
 };
+
+export const UpdateNotePinStatus = (noteId: number, isPinned: number) => {
+  return new Promise((resolve, reject) => {
+    db.transaction(tx => {
+      tx.executeSql(
+        `UPDATE Note
+         SET is_pinned = ?, updated_at = ?
+         WHERE note_id = ?`,
+        [isPinned, new Date().toISOString(), noteId],
+        (_, result) => {
+          console.log('Pin update rows affected:', result.rowsAffected);
+
+          if (result.rowsAffected > 0) {
+            resolve(result);
+          } else {
+            reject(new Error('No note found with this note_id.'));
+          }
+        },
+        (_, error) => {
+          console.log('UpdateNotePinStatus SQL error:', error.message);
+          reject(error);
+          return false;
+        },
+      );
+    });
+  });
+};
+
+export const SoftDeleteNote = (noteId: number) => {
+  return new Promise((resolve, reject) => {
+    db.transaction(tx => {
+      tx.executeSql(
+        `UPDATE Note
+         SET is_deleted = 1, updated_at = ?
+         WHERE note_id = ?`,
+        [new Date().toISOString(), noteId],
+        (_, result) => {
+          console.log('Soft delete rows affected:', result.rowsAffected);
+
+          if (result.rowsAffected > 0) {
+            resolve(result);
+          } else {
+            reject(new Error('No note found with this note_id.'));
+          }
+        },
+        (_, error) => {
+          console.log('SoftDeleteNote SQL error:', error.message);
+          reject(error);
+          return false;
+        },
+      );
+    });
+  });
+};

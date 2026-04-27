@@ -10,6 +10,7 @@ import React, {useState} from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Image,
   Modal,
   ScrollView,
   StyleSheet,
@@ -22,7 +23,11 @@ import {RouteProp, useFocusEffect, useRoute} from '@react-navigation/native';
 import {RootStackParamList} from '../AppStackTypes';
 import {MyButton} from '../components/MyCustomComponent';
 import {appStyles as styles} from '../styles/AppStyles';
-import {ReadNoteData} from '../DatabaseOperation/RetrieveData';
+import {
+  ReadNoteData,
+  UpdateNotePinStatus,
+  SoftDeleteNote,
+} from '../DatabaseOperation/RetrieveData';
 
 type RoutePropType = RouteProp<RootStackParamList, 'NoteList'>;
 
@@ -57,13 +62,14 @@ const NoteListScreen = ({navigation}: any) => {
 // I only addede this part to the comment to solve the merge conlict,
 // please make the necessary changes if needed.
 
-
+  const bookmarkIcon = require('../assets/bookmark.png');
   const {username} = route.params;
 
   const [notes, setNotes] = useState<NoteRow[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showNewNoteModal, setShowNewNoteModal] = useState(false);
   const [newNoteTitle, setNewNoteTitle] = useState('');
+  const [searchText, setSearchText] = useState('');
 
   useFocusEffect(
     React.useCallback(() => {
@@ -101,6 +107,63 @@ const NoteListScreen = ({navigation}: any) => {
     });
   };
 
+  const handleTogglePin = async (note: NoteRow) => {
+  try {
+    const newPinStatus = note.is_pinned ? 0 : 1;
+
+    await UpdateNotePinStatus(note.note_id, newPinStatus);
+
+    setNotes(prevNotes =>
+      prevNotes.map(item =>
+        item.note_id === note.note_id
+          ? {...item, is_pinned: newPinStatus}
+          : item,
+      ),
+    );
+  } catch (err: any) {
+    console.log('Pin note error:', err?.message);
+    Alert.alert('Error', 'Unable to update pin status.');
+  }
+};
+
+const handleSoftDeleteNote = (note: NoteRow) => {
+  Alert.alert(
+    'Delete note',
+    `Are you sure you want to delete "${note.title}"?`,
+    [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await SoftDeleteNote(note.note_id);
+
+            setNotes(prevNotes =>
+              prevNotes.filter(item => item.note_id !== note.note_id),
+            );
+          } catch (err: any) {
+            console.log('Soft delete note error:', err?.message);
+            Alert.alert(
+              'Error',
+              err?.message || 'Unable to delete note.',
+            );
+          }
+        },
+      },
+    ],
+  );
+};
+
+const filteredNotes = notes
+  .filter(note =>
+    note.title.toLowerCase().includes(searchText.toLowerCase()),
+  )
+  .sort((a, b) => b.is_pinned - a.is_pinned);
+
   return (
     <ScrollView contentContainerStyle={styles.content}>
       <View style={styles.noteScreenHeader}>
@@ -115,6 +178,14 @@ const NoteListScreen = ({navigation}: any) => {
         />
       </View>
 
+      <TextInput
+        style={listStyles.searchInput}
+        placeholder="Search notes..."
+        placeholderTextColor="#9ca3af"
+        value={searchText}
+        onChangeText={setSearchText}
+      />
+
       <MyButton
         title="＋ New Note"
         onPress={() => {
@@ -127,7 +198,7 @@ const NoteListScreen = ({navigation}: any) => {
         <View style={listStyles.centered}>
           <ActivityIndicator size="large" color="#3dc9f3" />
         </View>
-      ) : notes.length === 0 ? (
+      ) : filteredNotes.length === 0 ? (
         <View style={styles.card}>
           <Text style={styles.notePlaceholderTitle}>No notes yet</Text>
           <Text style={styles.notePlaceholderText}>
@@ -136,12 +207,12 @@ const NoteListScreen = ({navigation}: any) => {
         </View>
       ) : (
         <View style={styles.card}>
-          {notes.map(note => (
+          {filteredNotes.map(note => (
             <TouchableOpacity
               key={note.note_id}
               onPress={() => handleOpenNote(note)}
               activeOpacity={0.75}
-              style={styles.noteItem}>
+              style={[styles.noteItem, listStyles.noteItemWithBookmark]}>
               <Text style={styles.noteItemTitle} numberOfLines={1}>
                 {note.is_pinned ? '📌 ' : ''}
                 {note.title}
@@ -149,6 +220,31 @@ const NoteListScreen = ({navigation}: any) => {
               <Text style={styles.noteItemMeta}>
                 Last updated: {formatDate(note.updated_at)}
               </Text>
+
+              <TouchableOpacity
+                onPress={event => {
+                event.stopPropagation();
+                handleTogglePin(note);
+              }}
+                style={listStyles.bookmarkButton}
+                activeOpacity={0.7}>
+                <Image
+                  source={bookmarkIcon}
+                  style={[
+                    listStyles.bookmarkIcon,
+                    note.is_pinned ? listStyles.bookmarkIconActive : listStyles.bookmarkIconInactive,
+                  ]}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+    onPress={event => {
+      event.stopPropagation();
+      handleSoftDeleteNote(note);
+    }}
+    style={listStyles.deleteButton}
+    activeOpacity={0.7}>
+    <Text style={listStyles.deleteButtonText}>Delete</Text>
+  </TouchableOpacity>
             </TouchableOpacity>
           ))}
         </View>
@@ -201,6 +297,60 @@ const listStyles = StyleSheet.create({
     color: '#111827',
     marginBottom: 14,
     fontSize: 15,
+  },
+
+  searchInput: {
+  borderWidth: 1,
+  borderColor: '#d1d5db',
+  borderRadius: 12,
+  paddingHorizontal: 14,
+  paddingVertical: 12,
+  backgroundColor: '#ffffff',
+  color: '#111827',
+  fontSize: 15,
+  },
+
+  noteItemWithBookmark: {
+  position: 'relative',
+  paddingRight: 50,
+  paddingBottom: 45,
+  },
+
+  bookmarkButton: {
+    position: 'absolute',
+    right: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  bookmarkIcon: {
+    width: 42,
+    height: 48,
+    resizeMode: 'contain',
+  },
+
+  bookmarkIconActive: {
+    opacity: 1,
+  },
+
+  bookmarkIconInactive: {
+    opacity: 0.25,
+  },
+
+  deleteButton: {
+    position: 'absolute',
+    right: 14,
+    bottom: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
+    backgroundColor: '#fee2e2',
+  },
+
+  deleteButtonText: {
+   color: '#b91c1c',
+   fontWeight: '600',
+   fontSize: 13,
   },
 });
 
