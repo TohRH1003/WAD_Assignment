@@ -171,11 +171,6 @@ const filteredNotes = notes
           <Text style={styles.title}>My Notes</Text>
           <Text style={styles.subtitle}>Welcome, {username}</Text>
         </View>
-        <MyButton
-          title="Profile"
-          variant="header"
-          onPress={() => navigation.navigate('Profile', {username})}
-        />
       </View>
 
       <TextInput
