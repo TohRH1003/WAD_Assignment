@@ -23,11 +23,11 @@ import {RouteProp, useFocusEffect, useRoute} from '@react-navigation/native';
 import {MainDrawerParamList} from '../AppStackTypes';
 import {MyButton} from '../components/MyCustomComponent';
 import {appStyles as styles} from '../styles/AppStyles';
+import {ReadNoteData} from '../DatabaseOperation/RetrieveData';
 import {
-  ReadNoteData,
   UpdateNotePinStatus,
   SoftDeleteNote,
-} from '../DatabaseOperation/RetrieveData';
+} from '../DatabaseOperation/UpdateNote';
 
 type RoutePropType = RouteProp<MainDrawerParamList, 'NoteList'>;
 
