@@ -7,12 +7,13 @@ import {appStyles as styles} from '../styles/AppStyles';
 const RegisterScreen = ({navigation}: any) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [isAuthSubmitting, setIsAuthSubmitting] = useState(false);
 
   const checkFieldIsEmpty = () => {
-    return !username || !password || !name || !email;
+    return !username || !password || !name || !email || !confirmPassword;
   }
 
   const checkEmailFormat = () => {
@@ -36,7 +37,12 @@ const RegisterScreen = ({navigation}: any) => {
       return 'Validation Error, Username should not contain spaces.';
     }
 
-    return "Username is unavailable, Please choose a different username.";
+    if(password !== confirmPassword)
+    {
+      return 'Validation Error, Password and Confirm Password do not match.';
+    }
+
+    return null;
   }
 
   useEffect(() => {
@@ -44,6 +50,11 @@ const RegisterScreen = ({navigation}: any) => {
   }, []);
 
   const handleRegister = async () => {
+    const validationError = validateInput();
+    if (validationError) {
+      Alert.alert(validationError);
+      return;
+    }
     try {
       setIsAuthSubmitting(true);
       await InsertUser(username, password, name, email);
@@ -53,13 +64,14 @@ const RegisterScreen = ({navigation}: any) => {
       );
       setUsername('');
       setPassword('');
+      setConfirmPassword('');
       setName('');
       setEmail('');
       navigation.navigate('Login');
     } catch (error: any) {
       Alert.alert(
         'Create account failed',
-          validateInput()
+        "Username already exists, please choose a different username.",
       );
     } finally {
       setIsAuthSubmitting(false);
@@ -87,10 +99,14 @@ const RegisterScreen = ({navigation}: any) => {
         />
 
         <MyTextInput
-          label="Full Name"
-          value={name}
-          onChangeText={setName}
+          label="Confirm Password"
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry
+          autoCapitalize="none"
         />
+
+        <MyTextInput label="Full Name" value={name} onChangeText={setName} />
 
         <MyTextInput
           label="Email"

@@ -24,7 +24,7 @@ export const CreateTable = () => { //Method used to create table in Sqlite
         username TEXT PRIMARY KEY,  
         password TEXT NOT NULL,   
         name TEXT NOT NULL,               
-        email TEXT UNIQUE NOT NULL,
+        email TEXT NOT NULL,
         create_at TEXT NOT NULL           
       )`,
       [],
