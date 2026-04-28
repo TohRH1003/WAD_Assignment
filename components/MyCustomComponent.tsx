@@ -9,18 +9,7 @@ import {
 } from 'react-native';
 import {appStyles as styles} from '../styles/AppStyles';
 
-type MyTextInputProps = TextInputProps & {
-  label: string;
-};
-
-type MyButtonVariant = 'primary' | 'secondary' | 'link' | 'header';
-
-type MyButtonProps = TouchableOpacityProps & {
-  title: string;
-  variant?: MyButtonVariant;
-};
-
-const getButtonStyle = (variant: MyButtonVariant) => {
+const getButtonStyle = (variant: any) => {
   switch (variant) {
     case 'secondary':
       return styles.secondaryButton;
@@ -34,7 +23,7 @@ const getButtonStyle = (variant: MyButtonVariant) => {
   }
 };
 
-const getButtonTextStyle = (variant: MyButtonVariant) => {
+const getButtonTextStyle = (variant: any) => {
   switch (variant) {
     case 'secondary':
       return styles.secondaryButtonText;
@@ -52,7 +41,7 @@ export const MyTextInput = ({
   label,
   editable = true,
   ...props
-}: MyTextInputProps) => {
+}: any) => {
   return (
     <View style={styles.inputGroup}>
       <Text style={styles.inputLabel}>{label}</Text>
@@ -66,7 +55,7 @@ export const MyButton = ({
   variant = 'primary',
   activeOpacity = 0.8,
   ...props
-}: MyButtonProps) => {
+}: any) => {
   return (
     <TouchableOpacity
       {...props}

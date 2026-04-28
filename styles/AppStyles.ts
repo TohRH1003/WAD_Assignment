@@ -79,29 +79,6 @@ export const appStyles = StyleSheet.create({
     flexShrink: 1,
     width: '100%',
   },
-  segmentRow: {
-    flexDirection: 'row',
-    backgroundColor: '#e5e7eb',
-    borderRadius: 12,
-    padding: 4,
-    marginBottom: 16,
-  },
-  segmentButton: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  segmentButtonActive: {
-    backgroundColor: '#3dc9f3',
-  },
-  segmentText: {
-    color: '#374151',
-    fontWeight: '600',
-  },
-  segmentTextActive: {
-    color: '#ffffff',
-  },
   inputGroup: {
     marginBottom: 14,
   },
@@ -131,7 +108,7 @@ export const appStyles = StyleSheet.create({
   },
   readonlyValue: {
     color: '#6b7280',
-    fontSize: 15,
+    fontSize: 16,
   },
   primaryButton: {
     backgroundColor: '#3dc9f3',
@@ -189,28 +166,6 @@ export const appStyles = StyleSheet.create({
     color: '#374151',
     lineHeight: 22,
     marginBottom: 10,
-  },
-  noteHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  noteListTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#111827',
-  },
-  profileShortcut: {
-    backgroundColor: '#e6fffb',
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  profileShortcutText: {
-    color: '#3dc9f3',
-    fontWeight: '700',
-    fontSize: 14,
   },
   notePlaceholderTitle: {
     fontSize: 18,
