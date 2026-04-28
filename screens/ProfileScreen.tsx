@@ -22,12 +22,14 @@ type UserProfile = {
   username: string;
   name: string;
   email: string;
+  createdAt: string;
 };
 
 const emptyProfile: UserProfile = {
   username: '',
   name: '',
   email: '',
+  createdAt: '',
 };
 
 const ProfileScreen = ({navigation, route}: any) => {
@@ -38,6 +40,15 @@ const ProfileScreen = ({navigation, route}: any) => {
   const [isGuideVisible, setIsGuideVisible] = useState(false);
   const [isGuideLoading, setIsGuideLoading] = useState(false);
   const [isLoadingQuote, setIsLoadingQuote] = useState(true);
+  const formattedCreatedAt = profile.createdAt
+    ? (() => {
+        const date = new Date(profile.createdAt);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+      })()
+    : '';
 
   useFocusEffect(
     useCallback(() => {
@@ -58,6 +69,7 @@ const ProfileScreen = ({navigation, route}: any) => {
             username: user.username,
             name: user.name,
             email: user.email,
+            createdAt: user.create_at,
           });
         } catch (error: any) {
           Alert.alert(
@@ -150,6 +162,7 @@ const ProfileScreen = ({navigation, route}: any) => {
           {renderInfoRow('Username', profile.username)}
           {renderInfoRow('Full Name', profile.name)}
           {renderInfoRow('Email', profile.email)}
+          {renderInfoRow('Account Created Date', formattedCreatedAt)}
 
           <MyButton
             title="Edit Profile"
