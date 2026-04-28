@@ -16,7 +16,7 @@ type GuideModalProps = {
 
 const GuideModal = ({guideInfo, visible, onClose}: GuideModalProps) => {
   return (
-    <Modal
+    <Modal // modal component to show app guide, it flows from the bottom of the screen and covers part of the content, allowing users to still see the context of where they are in the app while viewing the guide.
       visible={visible}
       transparent
       animationType="slide"

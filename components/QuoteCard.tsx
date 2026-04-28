@@ -21,7 +21,7 @@ const QuoteCard = ({isLoading, quoteInfo}: QuoteCardProps) => {
     <View style={styles.card}>
       <Text style={styles.cardLabel}>Quote of the day</Text>
       {isLoading ? (
-        <ActivityIndicator color="#0f766e" />
+        <ActivityIndicator color="#0f766e" /> // loading spinner
       ) : (
         <View style={styles.quoteContent}>
           <Text style={styles.quoteDay}>{quoteInfo?.day}</Text>
