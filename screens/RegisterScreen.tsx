@@ -19,6 +19,9 @@ const RegisterScreen = ({navigation}: any) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   }
+  const checkUsernameFormat = () => {
+    return username.includes(" ");
+  };
 
   const validateInput = () => {
     if (checkFieldIsEmpty()) {
@@ -27,7 +30,10 @@ const RegisterScreen = ({navigation}: any) => {
 
     if (!checkEmailFormat()) {
       return 'Validation Error, Please enter a valid email address.';
-      
+    }
+
+    if(checkUsernameFormat()) {
+      return 'Validation Error, Username should not contain spaces.';
     }
 
     return "Username is unavailable, Please choose a different username.";
