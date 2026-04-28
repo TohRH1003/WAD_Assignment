@@ -220,7 +220,7 @@ const filteredNotes = notes
                 onPress={event => {
                 event.stopPropagation();
                 handleTogglePin(note);
-              }}
+                }}
                 style={listStyles.bookmarkButton}
                 activeOpacity={0.7}>
                 <Image
@@ -232,14 +232,14 @@ const filteredNotes = notes
                 />
               </TouchableOpacity>
               <TouchableOpacity
-    onPress={event => {
-      event.stopPropagation();
-      handleSoftDeleteNote(note);
-    }}
-    style={listStyles.deleteButton}
-    activeOpacity={0.7}>
-    <Text style={listStyles.deleteButtonText}>Delete</Text>
-  </TouchableOpacity>
+                onPress={event => {
+                  event.stopPropagation();
+                  handleSoftDeleteNote(note);
+                }}
+                style={listStyles.deleteButton}
+                activeOpacity={0.7}>
+                <Text style={listStyles.deleteButtonText}>Delete</Text>
+              </TouchableOpacity>
             </TouchableOpacity>
           ))}
         </View>
