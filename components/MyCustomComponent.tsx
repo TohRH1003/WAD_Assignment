@@ -2,9 +2,7 @@ import React from 'react';
 import {
   Text,
   TextInput,
-  TextInputProps,
   TouchableOpacity,
-  TouchableOpacityProps,
   View,
 } from 'react-native';
 import {appStyles as styles} from '../styles/AppStyles';
