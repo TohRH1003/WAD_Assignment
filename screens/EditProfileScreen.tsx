@@ -22,7 +22,10 @@ const EditScreen = ({navigation, route}: any) => {
 
         if (!user) {
           Alert.alert('User not found', 'Unable to load profile information.');
-          navigation.navigate('Profile', {username});
+          navigation.navigate('MainDrawer', {
+            screen: 'Profile',
+            params: {username},
+          });
           return;
         }
 
@@ -149,7 +152,12 @@ const EditScreen = ({navigation, route}: any) => {
         <MyButton
           title="Cancel"
           variant="secondary"
-          onPress={() => navigation.navigate('Profile', {username})}
+          onPress={() =>
+            navigation.navigate('MainDrawer', {
+              screen: 'Profile',
+              params: {username},
+            })
+          }
         />
       </View>
     </ScrollView>

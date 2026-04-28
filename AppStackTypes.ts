@@ -5,10 +5,14 @@ export type AuthTabParamList = {
   Register: undefined;
 };
 
-export type RootStackParamList = {
-  Auth: NavigatorScreenParams<AuthTabParamList> | undefined;
+export type MainDrawerParamList = {
   NoteList: {username: string};
   Profile: {username: string};
+};
+
+export type RootStackParamList = {
+  Auth: NavigatorScreenParams<AuthTabParamList> | undefined;
+  MainDrawer: NavigatorScreenParams<MainDrawerParamList>;
   Edit: {username: string};
 
  // NoteEditorScreen it opens for both creating a new note and editing an existing one.
