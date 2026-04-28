@@ -3,7 +3,6 @@ import {Platform} from 'react-native';
 const SERVER_PORT = 5000;
 const DEFAULT_HOST = Platform.select({
   android: '10.0.2.2',
-  ios: 'localhost',
   default: 'localhost',
 });
 
