@@ -83,7 +83,7 @@ export const appStyles = StyleSheet.create({
     marginBottom: 14,
   },
   inputLabel: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
     color: '#374151',
     marginBottom: 6,

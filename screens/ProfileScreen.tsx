@@ -18,31 +18,20 @@ type GuideInfo = {
   steps: string[];
 };
 
-type UserProfile = {
-  username: string;
-  name: string;
-  email: string;
-  createdAt: string;
-};
-
-const emptyProfile: UserProfile = {
-  username: '',
-  name: '',
-  email: '',
-  createdAt: '',
-};
-
 const ProfileScreen = ({navigation, route}: any) => {
   const {username} = route.params;
-  const [profile, setProfile] = useState<UserProfile>(emptyProfile);
+  const [profileUsername, setProfileUsername] = useState('');
+  const [profileName, setProfileName] = useState('');
+  const [profileEmail, setProfileEmail] = useState('');
+  const [profileCreatedAt, setProfileCreatedAt] = useState('');
   const [quoteInfo, setQuoteInfo] = useState<QuoteInfo | null>(null);
   const [guideInfo, setGuideInfo] = useState<GuideInfo | null>(null);
   const [isGuideVisible, setIsGuideVisible] = useState(false);
   const [isGuideLoading, setIsGuideLoading] = useState(false);
   const [isLoadingQuote, setIsLoadingQuote] = useState(true);
-  const formattedCreatedAt = profile.createdAt
+  const formattedCreatedAt = profileCreatedAt
     ? (() => {
-        const date = new Date(profile.createdAt);
+        const date = new Date(profileCreatedAt);
         const day = String(date.getDate()).padStart(2, '0');
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const year = date.getFullYear();
@@ -65,12 +54,10 @@ const ProfileScreen = ({navigation, route}: any) => {
             return;
           }
 
-          setProfile({
-            username: user.username,
-            name: user.name,
-            email: user.email,
-            createdAt: user.create_at,
-          });
+          setProfileUsername(user.username);
+          setProfileName(user.name);
+          setProfileEmail(user.email);
+          setProfileCreatedAt(user.create_at);
         } catch (error: any) {
           Alert.alert(
             'Load failed',
@@ -126,24 +113,18 @@ const ProfileScreen = ({navigation, route}: any) => {
         text: 'Log Out',
         style: 'destructive',
         onPress: () => {
-          setProfile(emptyProfile);
+          setProfileUsername('');
+          setProfileName('');
+          setProfileEmail('');
+          setProfileCreatedAt('');
           navigation.navigate('Auth', {screen: 'Login'});
         },
       },
     ]);
   };
 
-  const renderInfoRow = (label: string, value: string) => (
-    <View style={styles.inputGroup}>
-      <Text style={styles.inputLabel}>{label}</Text>
-      <View style={styles.inputDisabled}>
-        <Text style={styles.readonlyValue}>{value}</Text>
-      </View>
-    </View>
-  );
-
   return (
-      <>
+    <>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.pageHeaderRow}>
           <View style={styles.pageHeaderTextWrap}>
@@ -159,15 +140,35 @@ const ProfileScreen = ({navigation, route}: any) => {
         <QuoteCard isLoading={isLoadingQuote} quoteInfo={quoteInfo} />
 
         <View style={styles.card}>
-          {renderInfoRow('Username', profile.username)}
-          {renderInfoRow('Full Name', profile.name)}
-          {renderInfoRow('Email', profile.email)}
-          {renderInfoRow('Account Created Date', formattedCreatedAt)}
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Username</Text>
+            <View style={styles.inputDisabled}>
+              <Text style={styles.readonlyValue}>{profileUsername}</Text>
+            </View>
+          </View>
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Full Name</Text>
+            <View style={styles.inputDisabled}>
+              <Text style={styles.readonlyValue}>{profileName}</Text>
+            </View>
+          </View>
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Email</Text>
+            <View style={styles.inputDisabled}>
+              <Text style={styles.readonlyValue}>{profileEmail}</Text>
+            </View>
+          </View>
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Account Created Date</Text>
+            <View style={styles.inputDisabled}>
+              <Text style={styles.readonlyValue}>{formattedCreatedAt}</Text>
+            </View>
+          </View>
 
           <MyButton
             title="Edit Profile"
             onPress={() =>
-              navigation.navigate('Edit', {username: profile.username})
+              navigation.navigate('Edit', {username: profileUsername})
             }
           />
 
@@ -175,7 +176,7 @@ const ProfileScreen = ({navigation, route}: any) => {
             title="Back To Notes"
             variant="secondary"
             onPress={() =>
-              navigation.navigate('NoteList', {username: profile.username})
+              navigation.navigate('NoteList', {username: profileUsername})
             }
           />
 
