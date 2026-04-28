@@ -9,36 +9,6 @@ export const initializeDatabase = () => {
   CreateTable();
 };
 
-const normalizeSqliteError = (error: any) => {
-  const rawMessage = `${error?.message || ''} ${
-    error?.code || ''
-  }`.toLowerCase();
-
-  if (
-    rawMessage.includes('unique') &&
-    (rawMessage.includes('user.username') || rawMessage.includes('username'))
-  ) {
-    return new Error('Username already exists');
-  }
-
-  if (
-    rawMessage.includes('unique') &&
-    (rawMessage.includes('user.email') || rawMessage.includes('email'))
-  ) {
-    return new Error('Email already exists');
-  }
-
-  if (rawMessage.includes('not null')) {
-    return new Error('All fields are required');
-  }
-
-  if (error instanceof Error && error.message) {
-    return error;
-  }
-
-  return new Error('Unable to create account right now');
-};
-
 export const InsertUser = (
   username: string,
   password: string,
@@ -80,7 +50,7 @@ export const InsertUser = (
           });
         },
         (_, error) => {
-          reject(normalizeSqliteError(error));
+          reject(error);
           return false;
         },
       );
