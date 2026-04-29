@@ -68,20 +68,6 @@ export const CreateTable = () => { //Method used to create table in Sqlite
       () => console.log('Note table created'),
       error => console.log('Error:', error),
     );
-
-    tx.executeSql( //Add Image table
-      `CREATE TABLE IF NOT EXISTS Image (
-        image_id INTEGER PRIMARY KEY AUTOINCREMENT, 
-        local_path TEXT NOT NULL,               
-        width INTEGER,
-        height INTEGER,
-        note_id TEXT,
-        FOREIGN KEY (note_id) REFERENCES Note(note_id) ON DELETE CASCADE 
-        )`,
-      [],
-      () => console.log('Image table created'),
-      error => console.log('Error:', error),
-    );
   });
 };
 

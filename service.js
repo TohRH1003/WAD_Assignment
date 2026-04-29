@@ -60,6 +60,35 @@ const sendJson = (response, statusCode, payload) => {
   response.end(JSON.stringify(payload));
 };
 
+const extractTextFromContent = value => {
+  if (typeof value !== 'string') {
+    return '';
+  }
+
+  try {
+    const parsed = JSON.parse(value);
+    if (Array.isArray(parsed)) {
+      return parsed
+        .map(segment => (typeof segment?.text === 'string' ? segment.text : ''))
+        .join(' ');
+    }
+  } catch {
+    // Treat as plain text when it is not JSON.
+  }
+
+  return value;
+};
+
+const countWords = value => {
+  const text = extractTextFromContent(value);
+  const trimmed = text.trim();
+  if (!trimmed) {
+    return 0;
+  }
+
+  return trimmed.split(/\s+/).length;
+};
+
 // ---------------- SERVER ---------------- //
 
 const server = http.createServer((request, response) => {
@@ -159,10 +188,39 @@ const server = http.createServer((request, response) => {
     request.on('end', () => {
       try {
         const parsed = body ? JSON.parse(body) : {};
-        const totalNotes = parsed.notes?.length || 0;
+        const incomingNotes = Array.isArray(parsed.notes) ? parsed.notes : [];
+        const notesWithCounts = incomingNotes.map(note => {
+          const wordCount = countWords(note?.content);
+          return {
+            note_id: note?.note_id ?? null,
+            title: typeof note?.title === 'string' && note.title.trim() ? note.title : 'Untitled',
+            wordCount,
+          };
+        });
+
+        const totalNotes = notesWithCounts.length;
+        const totalWords = notesWithCounts.reduce((sum, note) => sum + note.wordCount, 0);
+        const avgWordsPerNote =
+          totalNotes > 0 ? Number((totalWords / totalNotes).toFixed(2)) : 0;
+
+        let longestNote = null;
+        let shortestNote = null;
+
+        if (totalNotes > 0) {
+          longestNote = notesWithCounts.reduce((longest, current) =>
+            current.wordCount > longest.wordCount ? current : longest,
+          );
+          shortestNote = notesWithCounts.reduce((shortest, current) =>
+            current.wordCount < shortest.wordCount ? current : shortest,
+          );
+        }
 
         sendJson(response, 200, {
           totalNotes,
+          totalWords,
+          avgWordsPerNote,
+          longestNote,
+          shortestNote,
           message: 'Stats calculated',
         });
       } catch {
