@@ -1,7 +1,11 @@
 const http = require('http');
-const {URL} = require('url');
+const { URL } = require('url');
 
 const PORT = 5000;
+
+let notes = []; // in-memory storage
+
+// ---------------- EXISTING DATA ---------------- //
 
 const quotesByDay = {
   Monday: 'Write it down before it slips away.',
@@ -30,107 +34,38 @@ const noteTemplates = [
     id: 'study',
     name: 'Study Notes',
     title: 'Study Notes',
-    content:
-      'Topic:\nDate:\n\nSummary:\n\nKey Points:\n- \n- \n\nQuestions to Review:\n- ',
+    content: 'Topic:\nSummary:\nKey Points:\n- ',
   },
   {
     id: 'meeting',
     name: 'Meeting Notes',
     title: 'Meeting Notes',
-    content:
-      'Meeting Topic:\nDate & Time:\nAttendees:\n\nAgenda:\n- \n\nDiscussion:\n- \n\nAction Items:\n- [ ] ',
-  },
-  {
-    id: 'todo',
-    name: 'To-Do List',
-    title: 'To-Do List',
-    content:
-      'Today\'s Priorities:\n- [ ] \n- [ ] \n- [ ] \n\nLater Tasks:\n- [ ] \n- [ ] ',
-  },
-  {
-    id: 'daily-journal',
-    name: 'Daily Journal',
-    title: 'Daily Journal',
-    content:
-      'Date:\nMood:\n\nWhat happened today:\n\nWhat I learned:\n\nPlan for tomorrow:',
-  },
-  {
-    id: 'project',
-    name: 'Project Plan',
-    title: 'Project Plan',
-    content:
-      'Project Name:\nGoal:\nDeadline:\n\nTasks:\n- \n- \n\nRisks:\n- \n\nNext Step:',
+    content: 'Meeting Notes:\nAction Items:\n- ',
   },
 ];
 
-const getWordCountFromStoredContent = content => {
-  if (!content) return 0;
 
-  let textChunks = [];
-  try {
-    const parsed = JSON.parse(String(content));
-    if (Array.isArray(parsed)) {
-      textChunks = parsed.map(segment => String(segment?.text ?? '').trim());
-    } else {
-      textChunks = [String(content).trim()];
-    }
-  } catch {
-    textChunks = [String(content).trim()];
-  }
 
-  return textChunks.join(' ').split(/\s+/).filter(Boolean).length;
-};
+// ---------------- HELPERS ---------------- //
 
-const calculateNoteStats = notes => {
-  const safeNotes = Array.isArray(notes) ? notes : [];
-  const wordCounts = safeNotes.map(note => {
-    const words = getWordCountFromStoredContent(note?.content);
-    return {
-      note_id: note?.note_id ?? null,
-      title: note?.title || 'Untitled',
-      wordCount: words,
-    };
-  });
-
-  const totalNotes = wordCounts.length;
-  const totalWords = wordCounts.reduce((sum, item) => sum + item.wordCount, 0);
-  const avgWordsPerNote = totalNotes === 0 ? 0 : Number((totalWords / totalNotes).toFixed(2));
-
-  let longestNote = null;
-  let shortestNote = null;
-  if (wordCounts.length > 0) {
-    longestNote = wordCounts.reduce((prev, current) =>
-      current.wordCount > prev.wordCount ? current : prev,
-    );
-    shortestNote = wordCounts.reduce((prev, current) =>
-      current.wordCount < prev.wordCount ? current : prev,
-    );
-  }
-
-  return {
-    totalNotes,
-    totalWords,
-    avgWordsPerNote,
-    longestNote,
-    shortestNote,
-  };
-};
-
-const dayFormatter = new Intl.DateTimeFormat('en-US', {weekday: 'long'});
+const dayFormatter = new Intl.DateTimeFormat('en-US', { weekday: 'long' });
 
 const sendJson = (response, statusCode, payload) => {
   response.writeHead(statusCode, {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
   });
   response.end(JSON.stringify(payload));
 };
 
+// ---------------- SERVER ---------------- //
+
 const server = http.createServer((request, response) => {
+
   if (!request.url) {
-    sendJson(response, 400, {error: 'Invalid request'});
+    sendJson(response, 400, { error: 'Invalid request' });
     return;
   }
 
@@ -141,25 +76,107 @@ const server = http.createServer((request, response) => {
 
   const url = new URL(request.url, `http://${request.headers.host}`);
 
-  if (request.method === 'POST' && url.pathname === '/note-stats') {
-    let body = '';
-    request.on('data', chunk => {
-      body += chunk;
-    });
-    request.on('end', () => {
-      try {
-        const parsed = body ? JSON.parse(body) : {};
-        const stats = calculateNoteStats(parsed.notes);
-        sendJson(response, 200, stats);
-      } catch (error) {
-        sendJson(response, 400, {error: 'Invalid JSON body'});
-      }
-    });
+  // ================= NOTES CRUD ================= //
+
+  // GET ALL NOTES
+  if (request.method === 'GET' && url.pathname === '/notes') {
+    sendJson(response, 200, notes);
     return;
   }
 
+  // ADD NOTE
+  if (request.method === 'POST' && url.pathname === '/notes') {
+    let body = '';
+
+    request.on('data', chunk => {
+      body += chunk;
+    });
+
+    request.on('end', () => {
+      try {
+        const note = JSON.parse(body);
+
+        note.id = note.id || Date.now().toString();
+        note.images = note.images || []; //multiple images support
+
+        notes.push(note);
+
+        sendJson(response, 200, { message: 'Note added', note });
+      } catch {
+        sendJson(response, 400, { error: 'Invalid JSON' });
+      }
+    });
+
+    return;
+  }
+
+  // UPDATE NOTE
+  if (request.method === 'PUT' && url.pathname.startsWith('/notes/')) {
+    const id = url.pathname.split('/')[2];
+    let body = '';
+
+    request.on('data', chunk => {
+      body += chunk;
+    });
+
+    request.on('end', () => {
+      try {
+        const updated = JSON.parse(body);
+
+        notes = notes.map(n =>
+          n.id === id ? { ...n, ...updated } : n
+        );
+
+        sendJson(response, 200, { message: 'Updated' });
+      } catch {
+        sendJson(response, 400, { error: 'Invalid JSON' });
+      }
+    });
+
+    return;
+  }
+
+  // DELETE NOTE
+  if (request.method === 'DELETE' && url.pathname.startsWith('/notes/')) {
+    const id = url.pathname.split('/')[2];
+
+    notes = notes.filter(n => n.id !== id);
+
+    sendJson(response, 200, { message: 'Deleted' });
+    return;
+  }
+
+  // ================= EXISTING FEATURES ================= //
+
+  // NOTE STATS
+  if (request.method === 'POST' && url.pathname === '/note-stats') {
+    let body = '';
+
+    request.on('data', chunk => {
+      body += chunk;
+    });
+
+    request.on('end', () => {
+      try {
+        const parsed = body ? JSON.parse(body) : {};
+        const totalNotes = parsed.notes?.length || 0;
+
+        sendJson(response, 200, {
+          totalNotes,
+          message: 'Stats calculated',
+        });
+      } catch {
+        sendJson(response, 400, { error: 'Invalid JSON body' });
+      }
+    });
+
+    return;
+  }
+
+  // QUOTE
   if (request.method === 'GET' && url.pathname === '/quote') {
     const today = dayFormatter.format(new Date());
+
     sendJson(response, 200, {
       day: today,
       quote: quotesByDay[today],
@@ -167,11 +184,13 @@ const server = http.createServer((request, response) => {
     return;
   }
 
+  // GUIDE
   if (request.method === 'GET' && url.pathname === '/guide') {
     sendJson(response, 200, guide);
     return;
   }
 
+  // TEMPLATES
   if (request.method === 'GET' && url.pathname === '/templates') {
     sendJson(response, 200, {
       title: 'Note Templates',
@@ -180,7 +199,30 @@ const server = http.createServer((request, response) => {
     return;
   }
 
-  sendJson(response, 404, {error: 'Route not found'});
+  // PUT /notes/:id/images
+  const imagesMatch = url.pathname.match(/\/notes\/(.+)\/images/);
+  if (request.method === 'PUT' && imagesMatch) {
+    const noteId = imagesMatch[1];
+    let body = '';
+    request.on('data', chunk => { body += chunk; });
+    request.on('end', () => {
+      const { images } = JSON.parse(body);
+
+      // Find the note in your "database" and update its images array
+      const noteIndex = notesDatabase.findIndex(n => n.id === noteId);
+      if (noteIndex !== -1) {
+        notesDatabase[noteIndex].images = images;
+        console.log(`Images updated for note ${noteId}`);
+        sendJson(response, 200, { success: true });
+      } else {
+        sendJson(response, 404, { error: 'Note not found' });
+      }
+    });
+    return;
+  }
+
+  // NOT FOUND
+  sendJson(response, 404, { error: 'Route not found' });
 });
 
 server.listen(PORT, '0.0.0.0', () => {

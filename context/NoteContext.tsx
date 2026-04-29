@@ -4,9 +4,9 @@ import React, {
   useEffect,
   ReactNode,
 } from 'react';
-import {Text} from 'react-native';
-import {Note} from '../AppStackTypes';
-import {CLOUD_BASE_URL} from '../services/cloudService';
+import { Text } from 'react-native';
+import { Note } from '../AppStackTypes';
+import { CLOUD_BASE_URL } from '../services/cloudService';
 
 // ---------------- TYPES ---------------- //
 
@@ -28,7 +28,7 @@ export const NoteContext = createContext<NoteContextType>(
 
 // ---------------- PROVIDER ---------------- //
 
-export const NoteProvider = ({children}: {children: ReactNode}) => {
+export const NoteProvider = ({ children }: { children: ReactNode }) => {
   const [notes, setNotes] = useState<Note[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -54,7 +54,7 @@ export const NoteProvider = ({children}: {children: ReactNode}) => {
     await handleRequest(async () => {
       const res = await fetch(`${CLOUD_BASE_URL}/notes`);
       if (!res.ok) throw new Error('Failed to load notes');
-      
+
       const data = await res.json();
       setNotes(data);
     });
@@ -70,7 +70,7 @@ export const NoteProvider = ({children}: {children: ReactNode}) => {
 
       const res = await fetch(`${CLOUD_BASE_URL}/notes`, {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newNote),
       });
 
@@ -85,7 +85,7 @@ export const NoteProvider = ({children}: {children: ReactNode}) => {
     await handleRequest(async () => {
       const res = await fetch(`${CLOUD_BASE_URL}/notes/${note.id}`, {
         method: 'PUT',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(note),
       });
 

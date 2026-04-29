@@ -9,7 +9,7 @@ export const initializeDatabase = () => {
   CreateTable();
 };
 
-const normalizeSqliteError = (error: any) => {
+export const normalizeSqliteError = (error: any) => {
   const rawMessage = `${error?.message || ''} ${
     error?.code || ''
   }`.toLowerCase();

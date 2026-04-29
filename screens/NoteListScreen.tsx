@@ -19,16 +19,16 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import {RouteProp, useFocusEffect, useRoute} from '@react-navigation/native';
-import {MainDrawerParamList} from '../AppStackTypes';
-import {MyButton} from '../components/MyCustomComponent';
-import {appStyles as styles} from '../styles/AppStyles';
-import {ReadNoteData} from '../DatabaseOperation/RetrieveData';
+import { RouteProp, useFocusEffect, useRoute } from '@react-navigation/native';
+import { MainDrawerParamList } from '../AppStackTypes';
+import { MyButton } from '../components/MyCustomComponent';
+import { appStyles as styles } from '../styles/AppStyles';
+import { ReadNoteData } from '../DatabaseOperation/RetrieveData';
 import {
   UpdateNotePinStatus,
   SoftDeleteNote,
 } from '../DatabaseOperation/UpdateNote';
-import {getCloudNoteTemplates} from '../services/cloudService';
+import { getCloudNoteTemplates } from '../services/cloudService';
 
 type RoutePropType = RouteProp<MainDrawerParamList, 'NoteList'>;
 
@@ -75,7 +75,7 @@ const NoteListScreen = ({ navigation }: any) => {
   const [isTemplateLoading, setIsTemplateLoading] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [cloudTemplates, setCloudTemplates] = useState<
-    {id: string; name: string; title: string; content: string}[]
+    { id: string; name: string; title: string; content: string }[]
   >([]);
 
   // useFocusEffect(
@@ -150,7 +150,7 @@ const NoteListScreen = ({ navigation }: any) => {
             text: 'Create Empty Note',
             onPress: () => handleCreateNote(),
           },
-          {text: 'Cancel', style: 'cancel'},
+          { text: 'Cancel', style: 'cancel' },
         ],
       );
     } finally {
@@ -342,7 +342,7 @@ const NoteListScreen = ({ navigation }: any) => {
               value={newNoteTitle}
               onChangeText={setNewNoteTitle}
               autoFocus
-              onSubmitEditing={handleCreateNote}
+              onSubmitEditing={() => handleCreateNote()}
             />
             <MyButton title="Create Note" onPress={() => handleCreateNote()} />
             <MyButton
@@ -370,7 +370,7 @@ const NoteListScreen = ({ navigation }: any) => {
           onPress={() => setShowTemplateModal(false)}>
           <TouchableOpacity activeOpacity={1} style={styles.modalCard}>
             <Text style={styles.modalTitle}>Choose Template</Text>
-            <ScrollView style={{maxHeight: 300}}>
+            <ScrollView style={{ maxHeight: 300 }}>
               {cloudTemplates.map(template => (
                 <TouchableOpacity
                   key={template.id}

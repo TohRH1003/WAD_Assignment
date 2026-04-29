@@ -6,63 +6,12 @@ Note: I havent test all the Function, I just write it
 
 // databaseService.ts or any other file
 import { db, CreateTable } from './CreateTable';
+import { CLOUD_BASE_URL } from '../services/cloudService';
 
 // Call this function to initialize tables
 export const initializeDatabase = () => {
   CreateTable();
 };
-
-// export const UpdateFolderName = (folder_id: number, folder_name: string) => {
-//   return new Promise((resolve, reject) => {
-//     // Validation
-//     if (!folder_id) {
-//       reject(new Error('Folder ID is required'));
-//       return;
-//     }
-
-//     if (!folder_name || folder_name.trim() === '') {
-//       reject(new Error('Folder name is required'));
-//       return;
-//     }
-
-//     const currentTime = new Date().toISOString();
-
-//     db.transaction(tx => {
-//       tx.executeSql(
-//         `UPDATE Folder 
-//          SET folder_name = ?, 
-//              updated_at = ? 
-//          WHERE folder_id = ? AND is_deleted = 0`,
-//         [folder_name.trim(), currentTime, folder_id],
-//         (_, results) => {
-//           if (results.rowsAffected > 0) {
-//             console.log(
-//               'Folder name updated successfully. Rows affected:',
-//               results.rowsAffected,
-//             );
-//             resolve({
-//               success: true,
-//               folder_id: folder_id,
-//               folder_name: folder_name,
-//               updated_at: currentTime,
-//               rowsAffected: results.rowsAffected,
-//             });
-//           } else {
-//             reject(
-//               new Error(
-//                 `Folder with ID "${folder_id}" not found or is deleted`,
-//               ),
-//             );
-//           }
-//         },
-//         (_, error) => {
-//           console.log('Update error:', error);
-//           reject(error);
-//         },
-//       );
-//     });
-//   });
-// };
 
 export const UpdateFolderName = (folderId: number, newName: string) => {
   console.log(`Attempting to update folder ${folderId} to: ${newName}`);
@@ -111,15 +60,31 @@ export const UpdateNoteFolder = (noteId: number, folderId: number | null) => {
 };
 
 // Update Image
-export const UpdateNoteImage = (noteId: number, uri: string | null) => {
+export const UpdateNoteImage = async (noteId: string | number, images: string[]) => {
+  // 1. Save to Local SQLite (This makes it stay when you view the note again)
+  const imagesString = JSON.stringify(images);
   return new Promise((resolve, reject) => {
     db.transaction(tx => {
       tx.executeSql(
-        'UPDATE Note SET image_uri = ? WHERE note_id = ?',
-        [uri, noteId],
-        (_, result) => resolve(result),
-        (_, error) => { reject(error); return false; }
+        'UPDATE Note SET image_uri = ?, updated_at = ? WHERE note_id = ?',
+        [imagesString, new Date().toISOString(), noteId],
+        (_, results) => {
+          console.log("Image URI updated in SQLite");
+          resolve(results);
+        },
+        (_, error) => {
+          console.error("SQL Update Error:", error);
+          reject(error);
+          return false;
+        }
       );
     });
+
+    // 2. Keep your Cloud update if you are using service.js
+    fetch(`${CLOUD_BASE_URL}/notes/${noteId}/images`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ images }),
+    }).catch(err => console.log("Cloud sync failed:", err));
   });
 };

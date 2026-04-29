@@ -111,13 +111,16 @@ export const ReadNoteContent = (note_id: number) => {
         [note_id],
         (_, results) => {
           if (results.rows.length > 0) {
-            // const note = results.rows.item(0);
-            // resolve({
-            //   content: note.content || '',
-            //   title: note.title,
-            //   updated_at: note.updated_at,
-            // });
-            resolve(results.rows.item(0)); // This now includes folder_id and folder_name
+            let note = results.rows.item(0);
+
+            // Convert the string back into an array for the React Native state
+            try {
+              note.images = note.image_uri ? JSON.parse(note.image_uri) : [];
+            } catch (e) {
+              note.images = [];
+            }
+
+            resolve(note);
             return;
           }
 
@@ -157,6 +160,26 @@ export const ReadFolderData = (folder_id: number) => {
           reject(error);
           return false;
         },
+      );
+    });
+  });
+};
+
+export const ReadNotesByFolder = (username: string) => {
+  return new Promise((resolve, reject) => {
+    db.transaction(tx => {
+      tx.executeSql(
+        `SELECT note_id, title, folder_id FROM Note 
+         WHERE username = ? AND is_deleted = 0`,
+        [username],
+        (_, results) => {
+          let temp = [];
+          for (let i = 0; i < results.rows.length; ++i) {
+            temp.push(results.rows.item(i));
+          }
+          resolve(temp);
+        },
+        (_, error) => reject(error)
       );
     });
   });

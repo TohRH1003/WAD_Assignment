@@ -2,11 +2,11 @@ import {NavigatorScreenParams} from '@react-navigation/native';
 
 //Update Note type
 export interface Note {
-  id: number;
+  id: string | number;
   title: string;
   content: string;
   folder: string;
-  image?: string | null;
+  images?: string[];
   date: string;
 }
 
@@ -26,7 +26,12 @@ export type RootStackParamList = {
   Auth: NavigatorScreenParams<AuthTabParamList> | undefined;
   MainDrawer: NavigatorScreenParams<MainDrawerParamList>;
   Edit: {username: string};
-  MindMap: {content?: string; title?: string; imageUri?: string}; // Add this line
+  MindMap: {
+    content?: string; 
+    title?: string; 
+    imageUri?: string;
+    allImages?: string[];
+  };
 
  // NoteEditorScreen it opens for both creating a new note and editing an existing one.
   // When noteId is undefined, the screen creates a brand-new note.

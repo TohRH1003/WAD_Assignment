@@ -1,4 +1,4 @@
-import React, {useState, useCallback} from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,42 +9,49 @@ import {
   ActivityIndicator,
   Modal,
 } from 'react-native';
-import {useFocusEffect} from '@react-navigation/native';
-import {appStyles as styles} from '../styles/AppStyles';
-import {MyButton} from '../components/MyCustomComponent';
+import { useFocusEffect } from '@react-navigation/native';
+import { appStyles as styles } from '../styles/AppStyles';
+import { MyButton } from '../components/MyCustomComponent';
 
 // Import the database operations
 import {
   ReadUserFolders,
   CreateNewFolder,
   SoftDeleteFolder,
+  ReadNotesByFolder
 } from '../DatabaseOperation/RetrieveData';
 
-import {UpdateFolderName} from '../DatabaseOperation/UpdateFolder';
-import {UpdateNoteFolder} from '../DatabaseOperation/UpdateFolder';
+import { UpdateFolderName } from '../DatabaseOperation/UpdateFolder';
 
-const FolderListScreen = ({navigation, route}: any) => {
-  const {username} = route.params;
+const FolderListScreen = ({ navigation, route }: any) => {
+  const { username } = route.params;
 
   // State management
   const [folders, setFolders] = useState<any[]>([]);
   const [newFolderName, setNewFolderName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [allNotes, setAllNotes] = useState<any[]>([]);
 
-  // --- NEW MODAL STATES ---
+  // Modal States
   const [isRenameModalVisible, setIsRenameModalVisible] = useState(false);
   const [folderToRename, setFolderToRename] = useState<any>(null);
   const [renameValue, setRenameValue] = useState('');
 
-  // 1. Fetch folders from the SQLite database
+  // 1. Fetch folders and notes from the SQLite database
   const loadFolders = useCallback(async () => {
     try {
       setIsLoading(true);
-      const data = await ReadUserFolders(username);
-      setFolders(data);
+      // Type casting as any[] to resolve the 'unknown' TypeScript error
+      const folderData = (await ReadUserFolders(username)) as any[];
+      const noteData = (await ReadNotesByFolder(username)) as any[];
+
+      console.log("Folders in DB:", folderData);
+      console.log("Notes in DB:", noteData);
+
+      setFolders(folderData);
+      setAllNotes(noteData);
     } catch (error: any) {
-      console.log('Load folders error:', error.message);
-      Alert.alert('Error', 'Unable to load folders.');
+      Alert.alert('Error', 'Unable to load data.');
     } finally {
       setIsLoading(false);
     }
@@ -68,11 +75,10 @@ const FolderListScreen = ({navigation, route}: any) => {
     try {
       await CreateNewFolder(username, trimmedName);
       setNewFolderName('');
-      loadFolders(); // Refresh list
+      loadFolders();
       Alert.alert('Success', `Folder "${trimmedName}" created.`);
     } catch (error: any) {
       Alert.alert('System Error', error.message);
-      console.log('FULL ERROR:', error);
     }
   };
 
@@ -82,14 +88,14 @@ const FolderListScreen = ({navigation, route}: any) => {
       'Delete Folder',
       `Are you sure you want to delete "${folder.folder_name}"?`,
       [
-        {text: 'Cancel', style: 'cancel'},
+        { text: 'Cancel', style: 'cancel' },
         {
           text: 'Delete',
           style: 'destructive',
           onPress: async () => {
             try {
               await SoftDeleteFolder(folder.folder_id);
-              loadFolders(); // Refresh list
+              loadFolders();
             } catch (error: any) {
               Alert.alert('Error', 'Unable to delete folder.');
             }
@@ -99,54 +105,19 @@ const FolderListScreen = ({navigation, route}: any) => {
     );
   };
 
-  const UpdateFolderName = (folderId: number, currentName: string) => {
-    Alert.prompt(
-      'Rename Folder',
-      'Enter a new name for this folder:',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Save',
-          onPress: async newName => {
-            if (newName && newName.trim() !== '') {
-              try {
-                await UpdateFolderName(folderId, newName.trim());
-                // Refresh your folder list here
-                loadFolders();
-                Alert.alert('Success', 'Folder renamed successfully.');
-              } catch (error) {
-                Alert.alert('Error', 'Could not rename folder.');
-              }
-            }
-          },
-        },
-      ],
-      'plain-text',
-      currentName,
-    );
-  };
-
   const handleRenamePress = (folder: any) => {
     setFolderToRename(folder);
-    setRenameValue(folder.folder_name); // Pre-fill with current name
+    setRenameValue(folder.folder_name);
     setIsRenameModalVisible(true);
   };
 
   const saveRename = async () => {
-    if (!renameValue.trim()) return;
+    if (!renameValue.trim() || !folderToRename) return;
     try {
-      // 1. Wait for the DB to finish updating
       await UpdateFolderName(folderToRename.folder_id, renameValue.trim());
-
-      // 2. Close the modal
       setIsRenameModalVisible(false);
-
-      // 3. CRITICAL: Force the UI to fetch fresh data from SQLite
+      setFolderToRename(null);
       await loadFolders();
-
       Alert.alert('Success', 'Folder renamed successfully.');
     } catch (error) {
       Alert.alert('Error', 'Could not rename folder.');
@@ -154,7 +125,7 @@ const FolderListScreen = ({navigation, route}: any) => {
   };
 
   return (
-    <View style={{flex: 1}}>
+    <View style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.pageHeaderRow}>
           <View style={styles.pageHeaderTextWrap}>
@@ -172,7 +143,7 @@ const FolderListScreen = ({navigation, route}: any) => {
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>Create New Folder</Text>
             <TextInput
-              style={[styles.input, {marginBottom: 12}]}
+              style={[styles.input, { marginBottom: 12 }]}
               placeholder="e.g. Study, Work, Personal..."
               placeholderTextColor="#9ca3af"
               value={newFolderName}
@@ -182,23 +153,15 @@ const FolderListScreen = ({navigation, route}: any) => {
           </View>
         </View>
 
-        <Text
-          style={[
-            styles.inputLabel,
-            {marginLeft: 5, marginBottom: 5, marginTop: 5},
-          ]}>
+        <Text style={[styles.inputLabel, { marginLeft: 5, marginBottom: 5, marginTop: 5 }]}>
           Existing Folders
         </Text>
 
         <View style={styles.card}>
           {isLoading ? (
-            <ActivityIndicator
-              size="small"
-              color="#3dc9f3"
-              style={{padding: 20}}
-            />
+            <ActivityIndicator size="small" color="#3dc9f3" style={{ padding: 20 }} />
           ) : folders.length === 0 ? (
-            <Text style={{textAlign: 'center', color: '#9ca3af', padding: 20}}>
+            <Text style={{ textAlign: 'center', color: '#9ca3af', padding: 20 }}>
               No folders created yet.
             </Text>
           ) : (
@@ -206,55 +169,58 @@ const FolderListScreen = ({navigation, route}: any) => {
               <View
                 key={item.folder_id.toString()}
                 style={[
-                  {
-                    paddingVertical: 15,
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  },
+                  { paddingVertical: 15 },
                   index !== folders.length - 1 && {
                     borderBottomWidth: 1,
                     borderBottomColor: '#f3f4f6',
                   },
                 ]}>
-                <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                  <Text style={{fontSize: 20, marginRight: 12}}>📁</Text>
-                  <Text
-                    style={{fontSize: 16, fontWeight: '500', color: '#111827'}}>
-                    {item.folder_name}
-                  </Text>
+
+                {/* Folder Row Header */}
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Text style={{ fontSize: 20, marginRight: 12 }}>📁</Text>
+                    <Text style={{ fontSize: 16, fontWeight: '700', color: '#111827' }}>
+                      {item.folder_name}
+                    </Text>
+                  </View>
+
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <TouchableOpacity
+                      onPress={() => handleRenamePress(item)}
+                      style={{ backgroundColor: '#e0f7fd', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 6, marginRight: 10 }}>
+                      <Text style={{ color: '#3dc9f3', fontWeight: '700', fontSize: 11 }}>RENAME</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => handleDeletePress(item)}>
+                      <Text style={{ color: '#ef4444', fontWeight: '600', fontSize: 11 }}>DELETE</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
 
-                <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                  <TouchableOpacity
-                    onPress={() => handleRenamePress(item)}
-                    style={{
-                      backgroundColor: '#e0f7fd',
-                      paddingHorizontal: 12,
-                      paddingVertical: 6,
-                      borderRadius: 6,
-                      marginRight: 10,
-                    }}>
-                    <Text
-                      style={{
-                        color: '#3dc9f3',
-                        fontWeight: '700',
-                        fontSize: 12,
-                      }}>
-                      RENAME
-                    </Text>
-                  </TouchableOpacity>
+                {/* --- NOTES SUB-LIST --- */}
+                <View style={{ marginLeft: 35, marginTop: 10 }}>
+                  {allNotes
+                    .filter(note => String(note.folder_id) === String(item.folder_id))
+                    .map(note => (
+                      <TouchableOpacity
+                        key={note.note_id.toString()}
+                        style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 6 }}
+                        onPress={() => navigation.navigate('NoteEditor', {
+                          username,
+                          noteId: note.note_id,
+                          noteTitle: note.title
+                        })}
+                      >
+                        <Text style={{ fontSize: 16, marginRight: 8 }}>📄</Text>
+                        <Text style={{ fontSize: 14, color: '#4b5563' }}>{note.title}</Text>
+                      </TouchableOpacity>
+                    ))}
 
-                  <TouchableOpacity onPress={() => handleDeletePress(item)}>
-                    <Text
-                      style={{
-                        color: '#ef4444',
-                        fontWeight: '600',
-                        fontSize: 12,
-                      }}>
-                      DELETE
+                  {allNotes.filter(n => String(n.folder_id) === String(item.folder_id)).length === 0 && (
+                    <Text style={{ fontSize: 12, color: '#9ca3af', fontStyle: 'italic', marginLeft: 5 }}>
+                      Empty folder
                     </Text>
-                  </TouchableOpacity>
+                  )}
                 </View>
               </View>
             ))
@@ -264,72 +230,30 @@ const FolderListScreen = ({navigation, route}: any) => {
         <MyButton
           title="Return to Notes"
           variant="secondary"
-          onPress={() => navigation.navigate('NoteList', {username})}
+          onPress={() => navigation.navigate('NoteList', { username })}
         />
       </ScrollView>
 
-      {/* RENAME MODAL POP-UP */}
-      <Modal
-        visible={isRenameModalVisible}
-        transparent={true}
-        animationType="fade">
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
-          <View
-            style={{
-              width: '85%',
-              backgroundColor: 'white',
-              borderRadius: 20,
-              padding: 25,
-              elevation: 10,
-            }}>
-            <Text
-              style={{
-                fontSize: 20,
-                fontWeight: 'bold',
-                color: '#111827',
-                marginBottom: 5,
-              }}>
-              Rename Folder
-            </Text>
-            <Text style={{color: '#6b7280', marginBottom: 20}}>
+      {/* RENAME MODAL */}
+      <Modal visible={isRenameModalVisible} transparent={true} animationType="fade">
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' }}>
+          <View style={{ width: '85%', backgroundColor: 'white', borderRadius: 20, padding: 25 }}>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 5 }}>Rename Folder</Text>
+            <Text style={{ color: '#6b7280', marginBottom: 20 }}>
               Enter new name for "{folderToRename?.folder_name}"
             </Text>
-
             <TextInput
-              style={[
-                styles.input,
-                {borderWidth: 1, borderColor: '#e5e7eb', marginBottom: 25},
-              ]}
+              style={[styles.input, { borderWidth: 1, borderColor: '#e5e7eb', marginBottom: 25 }]}
               value={renameValue}
               onChangeText={setRenameValue}
               autoFocus={true}
             />
-
-            <View style={{flexDirection: 'row', justifyContent: 'flex-end'}}>
-              <TouchableOpacity
-                onPress={() => setIsRenameModalVisible(false)}
-                style={{marginRight: 25, paddingVertical: 10}}>
-                <Text style={{color: '#6b7280', fontWeight: '600'}}>
-                  Cancel
-                </Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+              <TouchableOpacity onPress={() => setIsRenameModalVisible(false)} style={{ marginRight: 25, paddingVertical: 10 }}>
+                <Text style={{ color: '#6b7280', fontWeight: '600' }}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={saveRename}
-                style={{
-                  backgroundColor: '#3dc9f3',
-                  paddingHorizontal: 20,
-                  paddingVertical: 10,
-                  borderRadius: 8,
-                }}>
-                <Text style={{color: 'white', fontWeight: '700'}}>
-                  Save Changes
-                </Text>
+              <TouchableOpacity onPress={saveRename} style={{ backgroundColor: '#3dc9f3', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 8 }}>
+                <Text style={{ color: 'white', fontWeight: '700' }}>Save</Text>
               </TouchableOpacity>
             </View>
           </View>

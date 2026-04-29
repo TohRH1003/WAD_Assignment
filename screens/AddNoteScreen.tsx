@@ -1,20 +1,19 @@
-import React, {useState, useContext, useEffect} from 'react'; //add useEffect
-import {Picker} from '@react-native-picker/picker'; //added
-import {View, Image, Text, ScrollView} from 'react-native'; //add Text, ScrollView
-import {launchImageLibrary} from 'react-native-image-picker';
-import {MyTextInput, MyButton} from '../components/MyCustomComponent';
-import {appStyles as styles} from '../styles/AppStyles';
+import React, { useState, useContext, useEffect } from 'react'; //add useEffect
+import { Picker } from '@react-native-picker/picker'; //added
+import {View, Image, Text, ScrollView, TouchableOpacity, Alert} from 'react-native';
+import { launchImageLibrary } from 'react-native-image-picker';
+import { MyTextInput, MyButton } from '../components/MyCustomComponent';
+import { appStyles as styles } from '../styles/AppStyles';
+import { NoteContext } from '../context/NoteContext';
 
-// Mock function for database - replace with your actual DB call
-// import { saveNoteToDB, getFoldersFromDB } from '../services/DatabaseOperation';
-
-const AddNoteScreen = ({navigation}: any) => {
+const AddNoteScreen = ({ navigation }: any) => {
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [selectedFolder, setSelectedFolder] = useState('General'); // Selected folder
   const [folder, setFolder] = useState<string[]>(['General']); // Default state
-  const [image, setImage] = useState<string | null>(null);
+  const [images, setImages] = useState<string[]>([]);
+  const { addNote } = useContext(NoteContext);
 
   const templates = {
     study: 'Topic:\nSummary:\nImportant Points:',
@@ -24,29 +23,39 @@ const AddNoteScreen = ({navigation}: any) => {
   // Load existing folders when screen opens
   useEffect(() => {
     // Replace this with: const data = await getFoldersFromDB();
-    const existingFolder = ['General', 'Study', 'Work', 'Personal']; 
+    const existingFolder = ['General', 'Study', 'Work', 'Personal'];
     setFolder(existingFolder);
   }, []);
 
-  const pickImage = () => {
-    launchImageLibrary({ mediaType: 'photo', quality: 1 }, (res: any) => {
-      if (res.assets) setImage(res.assets[0].uri || null);
+  const pickImages = () => {
+    launchImageLibrary({
+      mediaType: 'photo',
+      quality: 1,
+      selectionLimit: 0 // 0 means no limit (multiple selection)
+    }, (res: any) => {
+      if (res.assets) {
+        const newUris = res.assets.map((asset: any) => asset.uri);
+        setImages([...images, ...newUris]); // Append new images to list
+      }
     });
   };
 
-  const save = () => {
+  const save = async () => {
+    if (!title.trim()) {
+      Alert.alert("Please enter a title");
+      return;
+    }
+
     const newNote = {
       title,
       content,
       folder: selectedFolder,
-      image,
+      images, // Sending the array of images
       date: new Date().toLocaleString(),
     };
 
-    // Add console log 
-    console.log('Saving Note:', newNote);
-    // saveNoteToDB(newNote); // Call your save function here
-
+    // 3. Save to your Cloud Database via Context
+    await addNote(newNote);
     navigation.goBack();
   };
 
@@ -70,9 +79,9 @@ const AddNoteScreen = ({navigation}: any) => {
   return (
     <ScrollView contentContainerStyle={styles.content}>
       <MyTextInput label="Title" value={title} onChangeText={setTitle} />
-      
-      <Text style={{marginTop: 10, fontWeight: 'bold'}}>Folder Organization</Text>
-      <View style={{borderWidth: 1, borderColor: '#ccc', borderRadius: 5, marginVertical: 5}}>
+
+      <Text style={{ marginTop: 10, fontWeight: 'bold' }}>Folder Organization</Text>
+      <View style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 5, marginVertical: 5 }}>
         <Picker
           selectedValue={selectedFolder}
           onValueChange={(itemValue) => setSelectedFolder(itemValue)}>
@@ -82,29 +91,33 @@ const AddNoteScreen = ({navigation}: any) => {
         </Picker>
       </View>
 
-      <MyTextInput 
-        label="Content" 
-        value={content} 
-        onChangeText={setContent} 
-        multiline={true} 
-        numberOfLines={6} 
+      <MyTextInput
+        label="Content"
+        value={content}
+        onChangeText={setContent}
+        multiline={true}
+        numberOfLines={6}
       />
 
-      <View style={{flexDirection: 'row', justifyContent: 'space-between', marginVertical: 10}}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginVertical: 10 }}>
         <MyButton title="Study Template" onPress={() => setContent(templates.study)} />
         <MyButton title="Meeting Template" onPress={() => setContent(templates.meeting)} />
       </View>
 
-      <MyButton title="Insert Image" onPress={pickImage} />
+      <MyButton title="Insert Images" onPress={pickImages} />
 
-      {image && (
-        <Image 
-          source={{uri: image}} 
-          style={{width: 150, height: 150, alignSelf: 'center', marginVertical: 10, borderRadius: 10}} 
-        />
-      )}
+      {/* 4. Display multiple images in a horizontal row or wrap */}
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
+        {images.map((uri, index) => (
+          <Image
+            key={index}
+            source={{ uri }}
+            style={{ width: 100, height: 100, margin: 5, borderRadius: 10 }}
+          />
+        ))}
+      </View>
 
-      <View style={{marginTop: 20}}>
+      <View style={{ marginTop: 20 }}>
         <MyButton title="Save Note" onPress={save} />
       </View>
     </ScrollView>
@@ -112,13 +125,3 @@ const AddNoteScreen = ({navigation}: any) => {
 };
 
 export default AddNoteScreen;
-
-/**
- * android/app/src/main/AndroidManifest.xml
-
-Add these lines inside the <manifest> tag but above the <application> tag:
-
-<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-<uses-permission android:name="android.permission.CAMERA" />
- */

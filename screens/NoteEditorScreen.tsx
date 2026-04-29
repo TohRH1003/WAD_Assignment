@@ -97,7 +97,7 @@ const storageStringToSegments = (raw: string): Segment[] | null => {
 const plainTextToSegments = (text: string): Segment[] => {
   const lines = String(text ?? '').split('\n');
   if (lines.length === 0) {
-    return [{id: makeId(), text: '', ...DEFAULT_FORMATTING}];
+    return [{ id: makeId(), text: '', ...DEFAULT_FORMATTING }];
   }
 
   return lines.map(line => ({
@@ -161,12 +161,8 @@ const NoteEditorScreen = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [showFontPicker, setShowFontPicker] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [images, setImages] = useState<string[]>([]);
   const [noteContent, setNoteContent] = useState("");
-  const selectMockup = (key: string) => {
-    // Instead of a file URI, we save the "key" string
-    setImageUri(key);
-  };
 
   // 1. Add these new states
   const [folderId, setFolderId] = useState<number | null>(null);
@@ -180,13 +176,31 @@ const NoteEditorScreen = () => {
 
   // 2. Load all note data (Title, Folder, Content, Image)
   useEffect(() => {
-    if (!noteId) return;
+    if (!noteId) {
+      setIsLoading(false);
+      return;
+    }
+    
     setIsLoading(true);
 
     ReadNoteContent(noteId)
       .then((data: any) => {
         // Load Title
         setTitle(data.title || initialTitle || '');
+
+        // Load Image
+        if (data.images) {
+          try {
+            // If it's already an array, use it; otherwise, parse the string
+            const parsedImages = typeof data.images === 'string'
+              ? JSON.parse(data.images)
+              : data.images;
+            setImages(Array.isArray(parsedImages) ? parsedImages : []);
+          } catch (e) {
+            console.error("Error parsing images:", e);
+            setImages([]);
+          }
+        }
 
         // Load Folder Info
         if (data.folder_id) {
@@ -213,7 +227,7 @@ const NoteEditorScreen = () => {
   const handleSelectFolder = async () => {
     try {
       const { ReadUserFolders } = require('../DatabaseOperation/RetrieveData');
-      const userFolders = await ReadUserFolders(username);
+      const userFolders = await ReadUserFolders(username) as any[];
 
       const options = userFolders.map((f: any) => ({
         text: f.folder_name,
@@ -231,7 +245,7 @@ const NoteEditorScreen = () => {
         }
       });
 
-      options.push({ text: "Cancel", style: "cancel" });
+      // options.push({ text: "Cancel", style: "cancel" });
       Alert.alert("Move to Folder", "Select a destination:", options);
     } catch (error) {
       Alert.alert("Error", "Could not load folders.");
@@ -239,14 +253,22 @@ const NoteEditorScreen = () => {
   };
 
   // Add image
-  const pickImage = () => {
-    launchImageLibrary({ mediaType: 'photo', quality: 1 }, (response) => {
-      if (response.assets && response.assets.length > 0) {
-        setImageUri(response.assets[0].uri || null);
+  const pickImages = () => {
+    launchImageLibrary({
+      mediaType: 'photo',
+      quality: 1,
+      selectionLimit: 0
+    }, (response) => {
+      if (response.assets) {
+        // Use asset.uri - this is the temporary local path the app can access
+        const newUris = response.assets
+          .map(asset => asset.uri)
+          .filter((uri): uri is string => !!uri);
+
+        setImages(prev => [...prev, ...newUris]);
       }
     });
   };
-
   // View Mind Map
   const handleViewMindMap = () => {
     // Join all segment texts with newlines to create the content string
@@ -260,7 +282,12 @@ const NoteEditorScreen = () => {
     }
 
     // Navigate and pass the compiled content
-    navigation.navigate('MindMap', { content: fullContent });
+    navigation.navigate('MindMap', {
+      content: fullContent,
+      title: title,
+      allImages: images,
+      imageUri: images.length > 0 ? images[0] : undefined,
+    });
   };
 
   // Word count derived from segments
@@ -271,35 +298,40 @@ const NoteEditorScreen = () => {
     .filter(Boolean).length;
 
   // Load existing content (datas) ──────────────────────────────────────────────────
-  useEffect(() => {
-    if (!noteId) {
-      return;
-    }
-    setIsLoading(true);
-    ReadNoteContent(noteId)
-      .then((data: any) => {
-        setTitle(data.title || initialTitle || '');
-        if (data.content) {
-          const parsed = storageStringToSegments(data.content);
-          if (parsed && parsed.length > 0) {
-            setSegments(parsed);
-          } else if (data.content) {
-            // Plain text fallback (notes created by other teammates)
-            setSegments([
-              {
-                id: makeId(),
-                text: data.content,
-                ...DEFAULT_FORMATTING,
-              },
-            ]);
-          }
-        }
-      })
-      .catch(() => {
-        // New note – nothing to load
-      })
-      .finally(() => setIsLoading(false));
-  }, [noteId]);
+  // useEffect(() => {
+  //   if (!noteId) {
+  //     return;
+  //   }
+  //   setIsLoading(true);
+  //   ReadNoteContent(noteId)
+  //     .then((data: any) => {
+  //       setTitle(data.title || initialTitle || '');
+  //       if (data.images) {
+  //         // If data.images is a string from SQLite, use JSON.parse(data.images)
+  //         // If it's already an array from service.js, just set it
+  //         setImages(Array.isArray(data.images) ? data.images : JSON.parse(data.images || "[]"));
+  //       }
+  //       if (data.content) {
+  //         const parsed = storageStringToSegments(data.content);
+  //         if (parsed && parsed.length > 0) {
+  //           setSegments(parsed);
+  //         } else if (data.content) {
+  //           // Plain text fallback (notes created by other teammates)
+  //           setSegments([
+  //             {
+  //               id: makeId(),
+  //               text: data.content,
+  //               ...DEFAULT_FORMATTING,
+  //             },
+  //           ]);
+  //         }
+  //       }
+  //     })
+  //     .catch(() => {
+  //       // New note – nothing to load
+  //     })
+  //     .finally(() => setIsLoading(false));
+  // }, [noteId]);
 
   // Update active formatting when cursor moves ─────────────────────────────
   useEffect(() => {
@@ -404,7 +436,7 @@ const NoteEditorScreen = () => {
         await Promise.all([
           UpdateNoteFolder(noteId, folderId),
           UpdateNoteContent(noteId, contentStr), // this is for existing note, just update content
-          UpdateNoteImage(noteId, imageUri),
+          UpdateNoteImage(noteId, images),
         ]); // Add this helper if needed
 
         Alert.alert('Saved', 'Your note has been saved.', [
@@ -422,7 +454,7 @@ const NoteEditorScreen = () => {
           folderId ? String(folderId) : null // Ensure it's a number
         );
         await UpdateNoteContent(result.noteId, contentStr);
-        await UpdateNoteImage(result.noteId, imageUri);
+        await UpdateNoteImage(result.noteId, images);
         Alert.alert('Note created!', 'Your new note has been saved.', [
           { text: 'OK', onPress: () => navigation.goBack() },
         ]);
@@ -635,19 +667,24 @@ const NoteEditorScreen = () => {
           />
         ))}
         {/* Other note content (Title, Folder, etc) */}
-        {imageUri && (
-          <View style={{ marginVertical: 20, alignItems: 'center' }}>
-            <Image
-              source={{ uri: imageUri }}
-              style={{ width: '100%', height: 200, borderRadius: 10 }}
-            />
-            <TouchableOpacity onPress={() => setImageUri(null)}>
-              <Text style={{ color: 'red', marginTop: 10 }}>Remove Photo</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginVertical: 10 }}>
+          {images.map((uri, index) => (
+            <View key={index} style={{ position: 'relative' }}>
+              <Image
+                source={{ uri }}
+                style={{ width: 100, height: 100, borderRadius: 10 }}
+              />
+              <TouchableOpacity
+                style={{ position: 'absolute', top: -5, right: -5, backgroundColor: 'red', borderRadius: 10, padding: 2 }}
+                onPress={() => setImages(images.filter((_, i) => i !== index))}
+              >
+                <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}> X </Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
 
-        <MyButton title="📷 Add Photo" variant="primary" onPress={pickImage} />
+        <MyButton title="📷 Add Photos" variant="primary" onPress={pickImages} />
 
         {/* Mind Map */}
         <MyButton

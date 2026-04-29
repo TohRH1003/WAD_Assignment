@@ -4,6 +4,7 @@ Note: I havent test all the Function, I just write it
 */
 
 import {db, CreateTable} from './CreateTable';
+import { normalizeSqliteError } from './UpdateUser';
 
 export const initializeDatabase = () => {
   CreateTable();
