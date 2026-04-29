@@ -235,17 +235,28 @@ export const CreateNewFolder = (username: string, folderName: string) => {
 
 // 3. Soft delete a folder
 export const SoftDeleteFolder = (folderId: number) => {
+  const now = new Date().toISOString();
   return new Promise((resolve, reject) => {
     db.transaction(tx => {
       tx.executeSql(
-        'UPDATE Folder SET is_deleted = 1 WHERE folder_id = ?',
-        [folderId],
-        (_, result) => {
-          if (result.rowsAffected > 0) {
-            resolve(result);
-          } else {
-            reject(new Error('Folder not found.'));
-          }
+        'UPDATE Note SET folder_id = NULL, updated_at = ? WHERE folder_id = ? AND is_deleted = 0',
+        [now, folderId],
+        () => {
+          tx.executeSql(
+            'UPDATE Folder SET is_deleted = 1, updated_at = ? WHERE folder_id = ?',
+            [now, folderId],
+            (_, result) => {
+              if (result.rowsAffected > 0) {
+                resolve(result);
+              } else {
+                reject(new Error('Folder not found.'));
+              }
+            },
+            (_, error) => {
+              reject(error);
+              return false;
+            },
+          );
         },
         (_, error) => {
           reject(error);
@@ -256,32 +267,6 @@ export const SoftDeleteFolder = (folderId: number) => {
   });
 };
 
-export const UpdateNotePinStatus = (noteId: number, isPinned: number) => {
-  return new Promise((resolve, reject) => {
-    db.transaction(tx => {
-      tx.executeSql(
-        `UPDATE Note
-         SET is_pinned = ?, updated_at = ?
-         WHERE note_id = ?`,
-        [isPinned, new Date().toISOString(), noteId],
-        (_, result) => {
-          console.log('Pin update rows affected:', result.rowsAffected);
-
-          if (result.rowsAffected > 0) {
-            resolve(result);
-          } else {
-            reject(new Error('No note found with this note_id.'));
-          }
-        },
-        (_, error) => {
-          console.log('UpdateNotePinStatus SQL error:', error.message);
-          reject(error);
-          return false;
-        },
-      );
-    });
-  });
-};
 
 export const SoftDeleteNote = (noteId: number) => {
   return new Promise((resolve, reject) => {
