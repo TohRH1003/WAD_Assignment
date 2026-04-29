@@ -28,6 +28,7 @@ import {
   UpdateNotePinStatus,
   SoftDeleteNote,
 } from '../DatabaseOperation/UpdateNote';
+import {getCloudNoteTemplates} from '../services/cloudService';
 
 type RoutePropType = RouteProp<MainDrawerParamList, 'NoteList'>;
 
@@ -71,6 +72,11 @@ const NoteListScreen = ({ navigation }: any) => {
   const [showNewNoteModal, setShowNewNoteModal] = useState(false);
   const [newNoteTitle, setNewNoteTitle] = useState('');
   const [searchText, setSearchText] = useState('');
+  const [isTemplateLoading, setIsTemplateLoading] = useState(false);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [cloudTemplates, setCloudTemplates] = useState<
+    {id: string; name: string; title: string; content: string}[]
+  >([]);
 
   // useFocusEffect(
   //   React.useCallback(() => {
@@ -107,7 +113,7 @@ const NoteListScreen = ({ navigation }: any) => {
     }, [username])
   );
 
-  const handleCreateNote = () => {
+  const handleCreateNote = (templateContent?: string) => {
     const trimmed = newNoteTitle.trim();
     if (!trimmed) {
       Alert.alert('Title required', 'Please enter a title for your new note.');
@@ -115,7 +121,41 @@ const NoteListScreen = ({ navigation }: any) => {
     }
     setShowNewNoteModal(false);
     setNewNoteTitle('');
-    navigation.navigate('NoteEditor', { username, noteTitle: trimmed });
+    navigation.navigate('NoteEditor', {
+      username,
+      noteTitle: trimmed,
+      noteTemplate: templateContent,
+    });
+  };
+
+  const handleCreateWithCloudTemplate = async () => {
+    const trimmed = newNoteTitle.trim();
+    if (!trimmed) {
+      Alert.alert('Title required', 'Please enter a title for your new note.');
+      return;
+    }
+
+    try {
+      setIsTemplateLoading(true);
+      const result = await getCloudNoteTemplates();
+      setCloudTemplates(result.templates || []);
+      setShowTemplateModal(true);
+    } catch (error) {
+      console.log('Template load error:', error);
+      Alert.alert(
+        'Connection error',
+        'Unable to connect to the server for templates.',
+        [
+          {
+            text: 'Create Empty Note',
+            onPress: () => handleCreateNote(),
+          },
+          {text: 'Cancel', style: 'cancel'},
+        ],
+      );
+    } finally {
+      setIsTemplateLoading(false);
+    }
   };
 
   const handleOpenNote = (note: NoteRow) => {
@@ -304,11 +344,49 @@ const NoteListScreen = ({ navigation }: any) => {
               autoFocus
               onSubmitEditing={handleCreateNote}
             />
-            <MyButton title="Create Note" onPress={handleCreateNote} />
+            <MyButton title="Create Note" onPress={() => handleCreateNote()} />
+            <MyButton
+              title={isTemplateLoading ? 'Loading...' : 'Use Cloud Template'}
+              onPress={handleCreateWithCloudTemplate}
+              disabled={isTemplateLoading}
+            />
             <MyButton
               title="Cancel"
               variant="secondary"
               onPress={() => setShowNewNoteModal(false)}
+            />
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
+
+      <Modal
+        visible={showTemplateModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowTemplateModal(false)}>
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowTemplateModal(false)}>
+          <TouchableOpacity activeOpacity={1} style={styles.modalCard}>
+            <Text style={styles.modalTitle}>Choose Template</Text>
+            <ScrollView style={{maxHeight: 300}}>
+              {cloudTemplates.map(template => (
+                <TouchableOpacity
+                  key={template.id}
+                  style={listStyles.templateRow}
+                  onPress={() => {
+                    setShowTemplateModal(false);
+                    handleCreateNote(template.content);
+                  }}>
+                  <Text style={listStyles.templateName}>{template.name}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+            <MyButton
+              title="Cancel"
+              variant="secondary"
+              onPress={() => setShowTemplateModal(false)}
             />
           </TouchableOpacity>
         </TouchableOpacity>
@@ -400,6 +478,20 @@ const listStyles = StyleSheet.create({
     fontSize: 11,
     color: '#0369a1',
     fontWeight: '700',
+  },
+  templateRow: {
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 8,
+    backgroundColor: '#ffffff',
+  },
+  templateName: {
+    fontSize: 15,
+    color: '#111827',
+    fontWeight: '600',
   },
 });
 

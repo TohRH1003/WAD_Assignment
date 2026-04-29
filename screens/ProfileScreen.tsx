@@ -2,10 +2,15 @@ import React, {useCallback, useState} from 'react';
 import {Alert, ScrollView, Text, View} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import {getUserByUsername} from '../DatabaseOperation/Authentication';
+import {ReadNoteData} from '../DatabaseOperation/RetrieveData';
 import GuideModal from '../components/GuideModal';
 import {MyButton} from '../components/MyCustomComponent';
 import QuoteCard from '../components/QuoteCard';
-import {getAppGuide, getDailyQuote} from '../services/cloudService';
+import {
+  getAppGuide,
+  getCloudNoteStats,
+  getDailyQuote,
+} from '../services/cloudService';
 import {appStyles as styles} from '../styles/AppStyles';
 
 type QuoteInfo = {
@@ -29,6 +34,7 @@ const ProfileScreen = ({navigation, route}: any) => {
   const [isGuideVisible, setIsGuideVisible] = useState(false);
   const [isGuideLoading, setIsGuideLoading] = useState(false);
   const [isLoadingQuote, setIsLoadingQuote] = useState(true);
+  const [isStatsLoading, setIsStatsLoading] = useState(false);
   const formattedCreatedAt = profileCreatedAt
     ? (() => {
         const date = new Date(profileCreatedAt);
@@ -123,6 +129,34 @@ const ProfileScreen = ({navigation, route}: any) => {
     ]);
   };
 
+  const handleGetCloudStats = async () => {
+    try {
+      setIsStatsLoading(true);
+      const notes = await ReadNoteData(profileUsername || username);
+      const stats = await getCloudNoteStats(notes);
+
+      const longestLabel = stats.longestNote
+        ? `${stats.longestNote.title} (${stats.longestNote.wordCount} words)`
+        : 'N/A';
+      const shortestLabel = stats.shortestNote
+        ? `${stats.shortestNote.title} (${stats.shortestNote.wordCount} words)`
+        : 'N/A';
+
+      Alert.alert(
+        'Cloud Note Statistics',
+        `Total Notes: ${stats.totalNotes}\nTotal Words: ${stats.totalWords}\nAverage Words/Note: ${stats.avgWordsPerNote}\nLongest Note: ${longestLabel}\nShortest Note: ${shortestLabel}`,
+      );
+    } catch (error: any) {
+      console.log('Cloud stats error:', error);
+      Alert.alert(
+        'Connection error',
+        'Unable to calculate note statistics from cloud.',
+      );
+    } finally {
+      setIsStatsLoading(false);
+    }
+  };
+
   return (
     <>
       <ScrollView contentContainerStyle={styles.content}>
@@ -170,6 +204,11 @@ const ProfileScreen = ({navigation, route}: any) => {
             onPress={() =>
               navigation.navigate('Edit', {username: profileUsername})
             }
+          />
+          <MyButton
+            title={isStatsLoading ? 'Calculating...' : 'Get Cloud Note Stats'}
+            onPress={handleGetCloudStats}
+            disabled={isStatsLoading}
           />
 
           <MyButton

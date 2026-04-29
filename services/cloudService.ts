@@ -18,6 +18,32 @@ type GuideResponse = {
   steps: string[];
 };
 
+type NoteStatsRequestItem = {
+  note_id?: number;
+  title?: string;
+  content?: string;
+};
+
+type NoteStatsResponse = {
+  totalNotes: number;
+  totalWords: number;
+  avgWordsPerNote: number;
+  longestNote: {note_id: number | null; title: string; wordCount: number} | null;
+  shortestNote: {note_id: number | null; title: string; wordCount: number} | null;
+};
+
+type CloudTemplate = {
+  id: string;
+  name: string;
+  title: string;
+  content: string;
+};
+
+type CloudTemplateResponse = {
+  title: string;
+  templates: CloudTemplate[];
+};
+
 export const getDailyQuote = () => {
   return fetch(`${CLOUD_BASE_URL}/quote`, {
     method: 'GET',
@@ -57,6 +83,59 @@ export const getAppGuide = () => {
     .catch(error => {
       console.error('Error:', error);
       throw error;
+    });
+};
+
+export const getCloudNoteStats = (notes: NoteStatsRequestItem[]) => {
+  return fetch(`${CLOUD_BASE_URL}/note-stats`, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({notes}),
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`Cloud request failed: ${response.status}`);
+      }
+
+      return response.json() as Promise<NoteStatsResponse>;
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      throw error;
+    });
+};
+
+export const getCloudNoteTemplates = () => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+  return fetch(`${CLOUD_BASE_URL}/templates`, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    signal: controller.signal,
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`Cloud request failed: ${response.status}`);
+      }
+
+      return response.json() as Promise<CloudTemplateResponse>;
+    })
+    .catch(error => {
+      if (error?.name === 'AbortError') {
+        throw new Error('Cloud request timeout');
+      }
+      console.error('Error:', error);
+      throw error;
+    })
+    .finally(() => {
+      clearTimeout(timeoutId);
     });
 };
 

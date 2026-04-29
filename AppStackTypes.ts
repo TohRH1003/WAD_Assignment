@@ -34,6 +34,8 @@ export type RootStackParamList = {
     username: string;
     noteId?: number;    // undefined → new note
     noteTitle?: string; // pre-fill the title input
+    noteTemplate?: string;
   };
 };
  
+

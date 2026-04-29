@@ -94,6 +94,19 @@ const storageStringToSegments = (raw: string): Segment[] | null => {
   }
 };
 
+const plainTextToSegments = (text: string): Segment[] => {
+  const lines = String(text ?? '').split('\n');
+  if (lines.length === 0) {
+    return [{id: makeId(), text: '', ...DEFAULT_FORMATTING}];
+  }
+
+  return lines.map(line => ({
+    id: makeId(),
+    text: line,
+    ...DEFAULT_FORMATTING,
+  }));
+};
+
 // adding for Sub-components ──────────────────────────────────────────────────────────
 
 const ToolbarButton = ({
@@ -131,7 +144,7 @@ const NoteEditorScreen = () => {
   const navigation = useNavigation<NavProp>();
   const route = useRoute<RoutePropType>();
 
-  const { username, noteId, noteTitle: initialTitle } = route.params;
+  const { username, noteId, noteTitle: initialTitle, noteTemplate } = route.params;
 
   // STATE ──────────────────────────────────────────────────────────────────
   const [title, setTitle] = useState(initialTitle ?? '');
@@ -158,6 +171,12 @@ const NoteEditorScreen = () => {
   // 1. Add these new states
   const [folderId, setFolderId] = useState<number | null>(null);
   const [folderName, setFolderName] = useState<string>('General');
+
+  useEffect(() => {
+    if (!noteId && noteTemplate) {
+      setSegments(plainTextToSegments(noteTemplate));
+    }
+  }, [noteId, noteTemplate]);
 
   // 2. Load all note data (Title, Folder, Content, Image)
   useEffect(() => {
@@ -920,3 +939,6 @@ const editorStyles = StyleSheet.create({
 });
 
 export default NoteEditorScreen;
+
+
+
