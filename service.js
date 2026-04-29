@@ -80,6 +80,69 @@ const noteTemplates = [
   },
 ];
 
+const brainstormingWords = [
+  'Innovation',
+  'Sustainability',
+  'Accessibility',
+  'Productivity',
+  'Collaboration',
+  'Automation',
+  'Learning',
+  'Wellness',
+  'Creativity',
+  'Growth',
+  'Empathy',
+  'Curiosity',
+  'Momentum',
+  'Resilience',
+  'Simplicity',
+  'Efficiency',
+  'Clarity',
+  'Adaptability',
+  'Consistency',
+  'Ownership',
+  'Focus',
+  'Insight',
+  'Exploration',
+  'Discovery',
+  'Inclusion',
+  'Trust',
+  'Balance',
+  'Strategy',
+  'Execution',
+  'Optimization',
+  'Transformation',
+  'Scalability',
+  'Reliability',
+  'Security',
+  'Quality',
+  'Impact',
+  'Vision',
+  'Purpose',
+  'Alignment',
+  'Agility',
+  'Feedback',
+  'Iteration',
+  'Design',
+  'Storytelling',
+  'Leadership',
+  'Community',
+  'Experiment',
+  'Opportunity',
+  'Breakthrough',
+  'Reflection',
+  'Progress',
+  'Mindset',
+  'Energy',
+  'Prioritization',
+  'Roadmap',
+  'Partnership',
+  'Problem-solving',
+  'Communication',
+  'Engagement',
+  'Motivation',
+];
+
 
 
 // ---------------- HELPERS ---------------- //
@@ -124,6 +187,16 @@ const countWords = value => {
 
   return trimmed.split(/\s+/).length;
 };
+
+const getRandomItem = items => {
+  if (!Array.isArray(items) || items.length === 0) {
+    return null;
+  }
+
+  const index = Math.floor(Math.random() * items.length);
+  return items[index];
+};
+
 
 // ---------------- SERVER ---------------- //
 
@@ -290,6 +363,13 @@ const server = http.createServer((request, response) => {
       title: 'Note Templates',
       templates: noteTemplates,
     });
+    return;
+  }
+
+  // BRAINSTORM WORD
+  if (request.method === 'GET' && url.pathname === '/brainstorm-word') {
+    const word = getRandomItem(brainstormingWords);
+    sendJson(response, 200, { word });
     return;
   }
 

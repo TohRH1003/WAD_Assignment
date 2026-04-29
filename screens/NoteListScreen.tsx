@@ -28,7 +28,7 @@ import {
   UpdateNotePinStatus,
   SoftDeleteNote,
 } from '../DatabaseOperation/UpdateNote';
-import { getCloudNoteTemplates } from '../services/cloudService';
+import { getBrainstormWord, getCloudNoteTemplates } from '../services/cloudService';
 
 type RoutePropType = RouteProp<MainDrawerParamList, 'NoteList'>;
 
@@ -74,6 +74,7 @@ const NoteListScreen = ({ navigation }: any) => {
   const [searchText, setSearchText] = useState('');
   const [isTemplateLoading, setIsTemplateLoading] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [isBrainstormLoading, setIsBrainstormLoading] = useState(false);
   const [cloudTemplates, setCloudTemplates] = useState<
     { id: string; name: string; title: string; content: string }[]
   >([]);
@@ -166,6 +167,19 @@ const NoteListScreen = ({ navigation }: any) => {
     });
   };
 
+  const handleBrainstormWord = async () => {
+    try {
+      setIsBrainstormLoading(true);
+      const result = await getBrainstormWord();
+      Alert.alert('Brainstorming Word', result.word || 'No word available');
+    } catch (error) {
+      console.log('Brainstorm word error:', error);
+      Alert.alert('Connection error', 'Unable to fetch brainstorming word.');
+    } finally {
+      setIsBrainstormLoading(false);
+    }
+  };
+
   const handleTogglePin = async (note: NoteRow) => {
     try {
       const newPinStatus = note.is_pinned ? 0 : 1;
@@ -184,6 +198,7 @@ const NoteListScreen = ({ navigation }: any) => {
       Alert.alert('Error', 'Unable to update pin status.');
     }
   };
+
 
   const handleSoftDeleteNote = (note: NoteRow) => {
     Alert.alert(
@@ -236,12 +251,7 @@ const NoteListScreen = ({ navigation }: any) => {
           variant="header"
           onPress={() => navigation.navigate('FolderList', { username })}
         />
-
-        <MyButton
-          title="Profile"
-          variant="header"
-          onPress={() => navigation.navigate('Profile', { username })}
-        />
+        
       </View>
 
       <TextInput
@@ -258,6 +268,13 @@ const NoteListScreen = ({ navigation }: any) => {
           setNewNoteTitle('');
           setShowNewNoteModal(true);
         }}
+      />
+
+      <MyButton
+        title={isBrainstormLoading ? 'Loading Brainstorm Word...' : 'Generate Brainstorming Word'}
+        variant="secondary"
+        onPress={handleBrainstormWord}
+        disabled={isBrainstormLoading}
       />
 
       {isLoading ? (
@@ -391,6 +408,7 @@ const NoteListScreen = ({ navigation }: any) => {
           </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
+
     </ScrollView>
   );
 };
