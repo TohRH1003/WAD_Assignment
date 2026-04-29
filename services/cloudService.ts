@@ -45,12 +45,16 @@ type CloudTemplateResponse = {
 };
 
 export const getDailyQuote = () => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8000);
+
   return fetch(`${CLOUD_BASE_URL}/quote`, {
     method: 'GET',
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
     },
+    signal: controller.signal,
   })
     .then(response => {
       if (!response.ok) {
@@ -60,18 +64,28 @@ export const getDailyQuote = () => {
       return response.json() as Promise<QuoteResponse>;
     })
     .catch(error => {
+      if (error?.name === 'AbortError') {
+        throw new Error('Cloud request timeout');
+      }
       console.error('Error:', error);
       throw error;
+    })
+    .finally(() => {
+      clearTimeout(timeoutId);
     });
 };
 
 export const getAppGuide = () => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8000);
+
   return fetch(`${CLOUD_BASE_URL}/guide`, {
     method: 'GET',
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
     },
+    signal: controller.signal,
   })
     .then(response => {
       if (!response.ok) {
@@ -81,12 +95,21 @@ export const getAppGuide = () => {
       return response.json() as Promise<GuideResponse>;
     })
     .catch(error => {
+      if (error?.name === 'AbortError') {
+        throw new Error('Cloud request timeout');
+      }
       console.error('Error:', error);
       throw error;
+    })
+    .finally(() => {
+      clearTimeout(timeoutId);
     });
 };
 
 export const getCloudNoteStats = (notes: NoteStatsRequestItem[]) => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8000);
+
   return fetch(`${CLOUD_BASE_URL}/note-stats`, {
     method: 'POST',
     headers: {
@@ -94,6 +117,7 @@ export const getCloudNoteStats = (notes: NoteStatsRequestItem[]) => {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({notes}),
+    signal: controller.signal,
   })
     .then(response => {
       if (!response.ok) {
@@ -103,8 +127,14 @@ export const getCloudNoteStats = (notes: NoteStatsRequestItem[]) => {
       return response.json() as Promise<NoteStatsResponse>;
     })
     .catch(error => {
+      if (error?.name === 'AbortError') {
+        throw new Error('Cloud request timeout');
+      }
       console.error('Error:', error);
       throw error;
+    })
+    .finally(() => {
+      clearTimeout(timeoutId);
     });
 };
 
