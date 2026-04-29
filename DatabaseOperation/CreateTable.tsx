@@ -84,8 +84,6 @@ export const CreateTable = () => { //Method used to create table in Sqlite
     );
   });
 };
-<<<<<<< HEAD
-=======
 
 export const UpdateNotePinStatus = (noteId: number, isPinned: number) => {
   return new Promise((resolve, reject) => {
@@ -107,4 +105,3 @@ export const UpdateNotePinStatus = (noteId: number, isPinned: number) => {
     });
   });
 };
->>>>>>> fb355ba1bbac73e902b649e48e0c823eaaa6391b

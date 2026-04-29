@@ -160,9 +160,6 @@ export const ReadFolderData = (folder_id: number) => {
       );
     });
   });
-<<<<<<< HEAD
-};
-=======
 };
 
 // 1. Fetch all active folders for the logged-in user
@@ -289,4 +286,3 @@ export const SoftDeleteNote = (noteId: number) => {
     });
   });
 };
->>>>>>> fb355ba1bbac73e902b649e48e0c823eaaa6391b

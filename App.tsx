@@ -20,7 +20,7 @@ import {
   DrawerItemList,
 } from '@react-navigation/drawer';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import LoginScreen from './screens/LoginScreen';
+import LoginScreen from './screens/loginScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import NoteListScreen from './screens/NoteListScreen';
 import FolderListScreen from './screens/FolderListScreen'; //added folder list
