@@ -1,20 +1,26 @@
-export type Note = {
-  id: string;
-  title: string;
-  content: string;
-  folder: string;
-  date: string;
-  image?: string | null;
+import {NavigatorScreenParams} from '@react-navigation/native';
+
+export type AuthTabParamList = {
+  Login: undefined;
+  Register: undefined;
+};
+
+export type MainDrawerParamList = {
+  NoteList: {username: string};
+  Profile: {username: string};
 };
 
 export type RootStackParamList = {
-  Login: undefined;
-  Register: undefined;
-  Home: undefined;
-  NoteList: {username: string};
-  Profile: {username: string};
+  Auth: NavigatorScreenParams<AuthTabParamList> | undefined;
+  MainDrawer: NavigatorScreenParams<MainDrawerParamList>;
   Edit: {username: string};
-  AddNote: undefined;
-  EditNote: {note: Note};
-  MindMap: {content: string};
+
+ // NoteEditorScreen it opens for both creating a new note and editing an existing one.
+  // When noteId is undefined, the screen creates a brand-new note.
+  NoteEditor: {
+    username: string;
+    noteId?: number;    // undefined → new note
+    noteTitle?: string; // pre-fill the title input
+  };
 };
+ 

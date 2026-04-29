@@ -1,18 +1,11 @@
 import React, {useCallback, useState} from 'react';
 import {Alert, ScrollView, Text, View} from 'react-native';
-import {
-  RouteProp,
-  useFocusEffect,
-  useNavigation,
-  useRoute,
-} from '@react-navigation/native';
-import {StackNavigationProp} from '@react-navigation/stack';
+import {useFocusEffect} from '@react-navigation/native';
 import {getUserByUsername} from '../DatabaseOperation/Authentication';
 import GuideModal from '../components/GuideModal';
 import {MyButton} from '../components/MyCustomComponent';
 import QuoteCard from '../components/QuoteCard';
 import {getAppGuide, getDailyQuote} from '../services/cloudService';
-import {RootStackParamList} from '../AppStackTypes';
 import {appStyles as styles} from '../styles/AppStyles';
 
 type QuoteInfo = {
@@ -25,28 +18,26 @@ type GuideInfo = {
   steps: string[];
 };
 
-type UserProfile = {
-  username: string;
-  name: string;
-  email: string;
-};
-
-const emptyProfile: UserProfile = {
-  username: '',
-  name: '',
-  email: '',
-};
-
-const ProfileScreen = () => {
-  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-  const route = useRoute<RouteProp<RootStackParamList, 'Profile'>>();
+const ProfileScreen = ({navigation, route}: any) => {
   const {username} = route.params;
-  const [profile, setProfile] = useState<UserProfile>(emptyProfile);
+  const [profileUsername, setProfileUsername] = useState('');
+  const [profileName, setProfileName] = useState('');
+  const [profileEmail, setProfileEmail] = useState('');
+  const [profileCreatedAt, setProfileCreatedAt] = useState('');
   const [quoteInfo, setQuoteInfo] = useState<QuoteInfo | null>(null);
   const [guideInfo, setGuideInfo] = useState<GuideInfo | null>(null);
   const [isGuideVisible, setIsGuideVisible] = useState(false);
   const [isGuideLoading, setIsGuideLoading] = useState(false);
   const [isLoadingQuote, setIsLoadingQuote] = useState(true);
+  const formattedCreatedAt = profileCreatedAt
+    ? (() => {
+        const date = new Date(profileCreatedAt);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+      })()
+    : '';
 
   useFocusEffect(
     useCallback(() => {
@@ -59,15 +50,14 @@ const ProfileScreen = () => {
               'User not found',
               'Unable to load profile information.',
             );
-            navigation.navigate('Login');
+            navigation.navigate('Auth', {screen: 'Login'});
             return;
           }
 
-          setProfile({
-            username: user.username,
-            name: user.name,
-            email: user.email,
-          });
+          setProfileUsername(user.username);
+          setProfileName(user.name);
+          setProfileEmail(user.email);
+          setProfileCreatedAt(user.create_at);
         } catch (error: any) {
           Alert.alert(
             'Load failed',
@@ -123,24 +113,18 @@ const ProfileScreen = () => {
         text: 'Log Out',
         style: 'destructive',
         onPress: () => {
-          setProfile(emptyProfile);
-          navigation.navigate('Login');
+          setProfileUsername('');
+          setProfileName('');
+          setProfileEmail('');
+          setProfileCreatedAt('');
+          navigation.navigate('Auth', {screen: 'Login'});
         },
       },
     ]);
   };
 
-  const renderInfoRow = (label: string, value: string) => (
-    <View style={styles.inputGroup}>
-      <Text style={styles.inputLabel}>{label}</Text>
-      <View style={styles.inputDisabled}>
-        <Text style={styles.readonlyValue}>{value}</Text>
-      </View>
-    </View>
-  );
-
   return (
-      <>
+    <>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.pageHeaderRow}>
           <View style={styles.pageHeaderTextWrap}>
@@ -156,14 +140,35 @@ const ProfileScreen = () => {
         <QuoteCard isLoading={isLoadingQuote} quoteInfo={quoteInfo} />
 
         <View style={styles.card}>
-          {renderInfoRow('Username', profile.username)}
-          {renderInfoRow('Full Name', profile.name)}
-          {renderInfoRow('Email', profile.email)}
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Username</Text>
+            <View style={styles.inputDisabled}>
+              <Text style={styles.readonlyValue}>{profileUsername}</Text>
+            </View>
+          </View>
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Full Name</Text>
+            <View style={styles.inputDisabled}>
+              <Text style={styles.readonlyValue}>{profileName}</Text>
+            </View>
+          </View>
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Email</Text>
+            <View style={styles.inputDisabled}>
+              <Text style={styles.readonlyValue}>{profileEmail}</Text>
+            </View>
+          </View>
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Account Created Date</Text>
+            <View style={styles.inputDisabled}>
+              <Text style={styles.readonlyValue}>{formattedCreatedAt}</Text>
+            </View>
+          </View>
 
           <MyButton
             title="Edit Profile"
             onPress={() =>
-              navigation.navigate('Edit', {username: profile.username})
+              navigation.navigate('Edit', {username: profileUsername})
             }
           />
 
@@ -171,7 +176,7 @@ const ProfileScreen = () => {
             title="Back To Notes"
             variant="secondary"
             onPress={() =>
-              navigation.navigate('NoteList', {username: profile.username})
+              navigation.navigate('NoteList', {username: profileUsername})
             }
           />
 

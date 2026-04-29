@@ -61,7 +61,7 @@ export const UpdateUserInfo = (
     }
 
     const trimmedPassword = password?.trim();
-    const query = trimmedPassword
+    const query = trimmedPassword //Check whether password is provided, if yes, update password as well, otherwise only update name and email
       ? `UPDATE User
          SET password = ?, name = ?, email = ?
          WHERE username = ?`
