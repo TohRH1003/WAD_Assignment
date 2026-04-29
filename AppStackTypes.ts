@@ -29,7 +29,7 @@ export type RootStackParamList = {
   MindMap: {
     content?: string; 
     title?: string; 
-    imageUri?: string;
+    imageUri?: string | undefined;
     allImages?: string[];
   };
 

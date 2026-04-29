@@ -33,6 +33,8 @@ import { UpdateNoteFolder } from '../DatabaseOperation/UpdateFolder';
 import { UpdateNoteImage } from '../DatabaseOperation/UpdateFolder';
 import { MyButton } from '../components/MyCustomComponent';
 import { getRandomImage } from '../services/cloudService';
+import { syncImagesToCloud } from '../services/cloudService';
+import { ReadUserFolders } from '../DatabaseOperation/RetrieveData';
 
 //  must making the Types first ──────────────────────────────────────────────
 
@@ -184,7 +186,7 @@ const NoteEditorScreen = () => {
       setIsLoading(false);
       return;
     }
-    
+
     setIsLoading(true);
 
     ReadNoteContent(noteId)
@@ -230,7 +232,6 @@ const NoteEditorScreen = () => {
   // 3. Add the picker function
   const handleSelectFolder = async () => {
     try {
-      const { ReadUserFolders } = require('../DatabaseOperation/RetrieveData');
       const userFolders = await ReadUserFolders(username) as any[];
       setAvailableFolders(Array.isArray(userFolders) ? userFolders : []);
       setShowFolderPicker(true);
@@ -435,8 +436,8 @@ const NoteEditorScreen = () => {
 
       if (noteId) {
         // Update existing note (ensure your update function handles folder_id)
-        const { UpdateNoteFolder } = require('../DatabaseOperation/UpdateFolder');
-        const { UpdateNoteContent } = require('../DatabaseOperation/UpdateNote');
+        // const { UpdateNoteFolder } = require('../DatabaseOperation/UpdateFolder');
+        // const { UpdateNoteContent } = require('../DatabaseOperation/UpdateNote');
         await Promise.all([
           UpdateNoteFolder(noteId, folderId),
           UpdateNoteContent(noteId, contentStr), // this is for existing note, just update content
@@ -447,6 +448,13 @@ const NoteEditorScreen = () => {
           { text: 'OK', onPress: () => navigation.goBack() },
         ]);
 
+        // Cloud Connectivity - Sync to Node.js Service
+        try {
+          await syncImagesToCloud(noteId, images);
+          console.log("Images backed up to cloud memory.");
+        } catch (err) {
+          console.log("Local save worked, but cloud sync failed.");
+        }
 
       } else {
         // this is for new note, insert then update (to get the noteId)
@@ -675,7 +683,7 @@ const NoteEditorScreen = () => {
           {images.map((uri, index) => (
             <View key={index} style={{ position: 'relative' }}>
               <Image
-                source={{ uri }}
+                source={{ uri: uri ?? '' }}
                 style={{ width: 100, height: 100, borderRadius: 10 }}
               />
               <TouchableOpacity
@@ -688,7 +696,7 @@ const NoteEditorScreen = () => {
           ))}
         </View>
 
-        <MyButton title="📷 Add Photos" variant="primary" onPress={pickImages} />
+        <MyButton title="Add Photos" variant="primary" onPress={pickImages} />
 
         <MyButton
           title={isRandomImageLoading ? 'Generating Image...' : 'Generate Random Image'}
@@ -700,7 +708,7 @@ const NoteEditorScreen = () => {
 
         {/* Mind Map */}
         <MyButton
-          title="🌳 View Mind Map"
+          title="View Mind Map"
           variant="primary"
           onPress={handleViewMindMap}
           style={{ marginTop: 10 }}
@@ -732,7 +740,8 @@ const NoteEditorScreen = () => {
                 <Text
                   style={[
                     editorStyles.fontPickerRowText,
-                    { fontSize: opt.value },
+                    // { fontSize: opt.value },
+                    opt?.value ? { fontSize: opt.value } : { fontSize: 16 },
                     formatting.fontSize === opt.value && { color: '#3dc9f3' },
                   ]}>
                   {opt.label}

@@ -387,18 +387,39 @@ const server = http.createServer((request, response) => {
   if (request.method === 'PUT' && imagesMatch) {
     const noteId = imagesMatch[1];
     let body = '';
-    request.on('data', chunk => { body += chunk; });
-    request.on('end', () => {
-      const { images } = JSON.parse(body);
 
-      // Find the note in your "database" and update its images array
-      const noteIndex = notesDatabase.findIndex(n => n.id === noteId);
-      if (noteIndex !== -1) {
-        notesDatabase[noteIndex].images = images;
-        console.log(`Images updated for note ${noteId}`);
-        sendJson(response, 200, { success: true });
-      } else {
-        sendJson(response, 404, { error: 'Note not found' });
+    request.on('data', chunk => { body += chunk; });
+
+    request.on('end', () => {
+      try {
+        const { images } = JSON.parse(body);
+
+        // 1. Find the note in your in-memory 'notes' array
+        const noteIndex = notes.findIndex(n => n.id === noteId);
+
+        if (noteIndex !== -1) {
+          // 2. Update the images array for that specific note
+          notes[noteIndex].images = images;
+
+          console.log(`Cloud: Images updated for note ID: ${noteId}`);
+          sendJson(response, 200, {
+            success: true,
+            message: 'Images synced to cloud',
+            currentImages: notes[noteIndex].images
+          });
+        } else {
+          // 3. If note doesn't exist in cloud yet, create a skeleton for it
+          const newNote = {
+            id: noteId,
+            title: 'Synced from Device',
+            images: images,
+            content: ''
+          };
+          notes.push(newNote);
+          sendJson(response, 201, { success: true, message: 'Note created in cloud with images' });
+        }
+      } catch (e) {
+        sendJson(response, 400, { error: 'Invalid JSON body' });
       }
     });
     return;

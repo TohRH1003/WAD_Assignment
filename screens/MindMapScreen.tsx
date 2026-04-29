@@ -271,7 +271,7 @@ const MindMapScreen = ({ route, navigation }: any) => {
                   <View style={mapStyles.connectorLine} />
                   <View style={mapStyles.imageNode}>
                     <Image
-                      source={{ uri: formatted }}
+                      source={{ uri: formatted || '' }}
                       style={mapStyles.mapImage}
                       resizeMode="cover"
                     />

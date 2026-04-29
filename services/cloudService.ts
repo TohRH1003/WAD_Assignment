@@ -1,4 +1,4 @@
-import {Platform} from 'react-native';
+import { Platform } from 'react-native';
 
 const SERVER_PORT = 5000;
 const DEFAULT_HOST = Platform.select({
@@ -28,8 +28,8 @@ type NoteStatsResponse = {
   totalNotes: number;
   totalWords: number;
   avgWordsPerNote: number;
-  longestNote: {note_id: number | null; title: string; wordCount: number} | null;
-  shortestNote: {note_id: number | null; title: string; wordCount: number} | null;
+  longestNote: { note_id: number | null; title: string; wordCount: number } | null;
+  shortestNote: { note_id: number | null; title: string; wordCount: number } | null;
 };
 
 type CloudTemplate = {
@@ -124,7 +124,7 @@ export const getCloudNoteStats = (notes: NoteStatsRequestItem[]) => {
       Accept: 'application/json',
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({notes}),
+    body: JSON.stringify({ notes }),
     signal: controller.signal,
   })
     .then(response => {
@@ -239,4 +239,25 @@ export const getRandomImage = () => {
     });
 };
 
-export {CLOUD_BASE_URL};
+export const syncImagesToCloud = async (noteId: string | number, images: string[]) => {
+  try {
+    const response = await fetch(`${CLOUD_BASE_URL}/notes/${noteId}/images`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ images }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to sync images to cloud');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Cloud Sync Error:', error);
+    throw error;
+  }
+};
+
+export { CLOUD_BASE_URL };
