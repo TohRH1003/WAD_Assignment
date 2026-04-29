@@ -42,6 +42,42 @@ const noteTemplates = [
     title: 'Meeting Notes',
     content: 'Meeting Notes:\nAction Items:\n- ',
   },
+  {
+    id: 'todo',
+    name: 'To-Do List',
+    title: 'To-Do List',
+    content: 'Top Priorities:\n- \n\nTasks:\n- [ ] \n- [ ] \n\nNotes:\n',
+  },
+  {
+    id: 'daily-journal',
+    name: 'Daily Journal',
+    title: 'Daily Journal',
+    content: 'Date:\nMood:\nHighlights:\n- \nChallenges:\n- \nReflection:\n',
+  },
+  {
+    id: 'project-plan',
+    name: 'Project Plan',
+    title: 'Project Plan',
+    content: 'Project Name:\nGoal:\nScope:\nMilestones:\n- \nRisks:\n- \nNext Step:\n',
+  },
+  {
+    id: 'lecture',
+    name: 'Lecture Notes',
+    title: 'Lecture Notes',
+    content: 'Course:\nLecture Topic:\nKey Concepts:\n- \nExamples:\n- \nQuestions:\n- ',
+  },
+  {
+    id: 'brainstorm',
+    name: 'Brainstorm Ideas',
+    title: 'Brainstorm Ideas',
+    content: 'Problem/Theme:\nIdeas:\n- \n- \n- \nBest Idea:\nWhy:\n',
+  },
+  {
+    id: 'weekly-review',
+    name: 'Weekly Review',
+    title: 'Weekly Review',
+    content: 'Week Of:\nWins:\n- \nLessons Learned:\n- \nCarry-Forward Tasks:\n- \nFocus Next Week:\n',
+  },
 ];
 
 

@@ -167,6 +167,8 @@ const NoteEditorScreen = () => {
   // 1. Add these new states
   const [folderId, setFolderId] = useState<number | null>(null);
   const [folderName, setFolderName] = useState<string>('General');
+  const [showFolderPicker, setShowFolderPicker] = useState(false);
+  const [availableFolders, setAvailableFolders] = useState<any[]>([]);
 
   useEffect(() => {
     if (!noteId && noteTemplate) {
@@ -228,25 +230,8 @@ const NoteEditorScreen = () => {
     try {
       const { ReadUserFolders } = require('../DatabaseOperation/RetrieveData');
       const userFolders = await ReadUserFolders(username) as any[];
-
-      const options = userFolders.map((f: any) => ({
-        text: f.folder_name,
-        onPress: () => {
-          setFolderId(f.folder_id);
-          setFolderName(f.folder_name);
-        }
-      }));
-
-      options.push({
-        text: "None (General)",
-        onPress: () => {
-          setFolderId(null);
-          setFolderName('General');
-        }
-      });
-
-      // options.push({ text: "Cancel", style: "cancel" });
-      Alert.alert("Move to Folder", "Select a destination:", options);
+      setAvailableFolders(Array.isArray(userFolders) ? userFolders : []);
+      setShowFolderPicker(true);
     } catch (error) {
       Alert.alert("Error", "Could not load folders.");
     }
@@ -733,6 +718,46 @@ const NoteEditorScreen = () => {
           </View>
         </TouchableOpacity>
       </Modal>
+
+      {/* Folder Picker Modal */}
+      <Modal
+        visible={showFolderPicker}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowFolderPicker(false)}>
+        <TouchableOpacity
+          style={editorStyles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowFolderPicker(false)}>
+          <TouchableOpacity activeOpacity={1} style={editorStyles.folderPickerCard}>
+            <Text style={editorStyles.fontPickerTitle}>Move to Folder</Text>
+            <ScrollView style={editorStyles.folderPickerList} nestedScrollEnabled>
+              <TouchableOpacity
+                onPress={() => {
+                  setFolderId(null);
+                  setFolderName('General');
+                  setShowFolderPicker(false);
+                }}
+                style={editorStyles.folderPickerRow}>
+                <Text style={editorStyles.folderPickerRowText}>None (General)</Text>
+              </TouchableOpacity>
+
+              {availableFolders.map((f: any) => (
+                <TouchableOpacity
+                  key={String(f.folder_id)}
+                  onPress={() => {
+                    setFolderId(f.folder_id);
+                    setFolderName(f.folder_name);
+                    setShowFolderPicker(false);
+                  }}
+                  style={editorStyles.folderPickerRow}>
+                  <Text style={editorStyles.folderPickerRowText}>{String(f.folder_name)}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 };
@@ -914,6 +939,26 @@ const editorStyles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderRadius: 18,
     padding: 20,
+  },
+  folderPickerCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 18,
+    padding: 20,
+    maxHeight: '70%',
+  },
+  folderPickerList: {
+    maxHeight: 320,
+  },
+  folderPickerRow: {
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderRadius: 10,
+    marginBottom: 4,
+  },
+  folderPickerRowText: {
+    color: '#374151',
+    fontWeight: '500',
+    fontSize: 16,
   },
   fontPickerTitle: {
     fontSize: 18,
