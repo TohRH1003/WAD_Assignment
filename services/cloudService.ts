@@ -48,6 +48,10 @@ type BrainstormWordResponse = {
   word: string;
 };
 
+type RandomImageResponse = {
+  imageUrl: string;
+};
+
 export const getDailyQuote = () => {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 8000);
@@ -191,6 +195,37 @@ export const getBrainstormWord = () => {
       }
 
       return response.json() as Promise<BrainstormWordResponse>;
+    })
+    .catch(error => {
+      if (error?.name === 'AbortError') {
+        throw new Error('Cloud request timeout');
+      }
+      console.error('Error:', error);
+      throw error;
+    })
+    .finally(() => {
+      clearTimeout(timeoutId);
+    });
+};
+
+export const getRandomImage = () => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+  return fetch(`${CLOUD_BASE_URL}/random-image`, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    signal: controller.signal,
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`Cloud request failed: ${response.status}`);
+      }
+
+      return response.json() as Promise<RandomImageResponse>;
     })
     .catch(error => {
       if (error?.name === 'AbortError') {

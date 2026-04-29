@@ -143,6 +143,8 @@ const brainstormingWords = [
   'Motivation',
 ];
 
+const randomImageBaseUrl = 'https://picsum.photos/400/300';
+
 
 
 // ---------------- HELPERS ---------------- //
@@ -370,6 +372,13 @@ const server = http.createServer((request, response) => {
   if (request.method === 'GET' && url.pathname === '/brainstorm-word') {
     const word = getRandomItem(brainstormingWords);
     sendJson(response, 200, { word });
+    return;
+  }
+
+  // RANDOM IMAGE
+  if (request.method === 'GET' && url.pathname === '/random-image') {
+    const imageUrl = `${randomImageBaseUrl}?t=${Date.now()}`;
+    sendJson(response, 200, { imageUrl });
     return;
   }
 

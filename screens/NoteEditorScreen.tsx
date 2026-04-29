@@ -32,6 +32,7 @@ import { UpdateNoteContent } from '../DatabaseOperation/UpdateNote';
 import { UpdateNoteFolder } from '../DatabaseOperation/UpdateFolder';
 import { UpdateNoteImage } from '../DatabaseOperation/UpdateFolder';
 import { MyButton } from '../components/MyCustomComponent';
+import { getRandomImage } from '../services/cloudService';
 
 //  must making the Types first ──────────────────────────────────────────────
 
@@ -161,6 +162,7 @@ const NoteEditorScreen = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [showFontPicker, setShowFontPicker] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRandomImageLoading, setIsRandomImageLoading] = useState(false);
   const [images, setImages] = useState<string[]>([]);
   const [noteContent, setNoteContent] = useState("");
 
@@ -253,6 +255,23 @@ const NoteEditorScreen = () => {
         setImages(prev => [...prev, ...newUris]);
       }
     });
+  };
+
+  const handleGenerateRandomImage = async () => {
+    try {
+      setIsRandomImageLoading(true);
+      const result = await getRandomImage();
+      if (!result?.imageUrl) {
+        Alert.alert('No image', 'Random image is not available right now.');
+        return;
+      }
+      setImages(prev => [...prev, result.imageUrl]);
+    } catch (error) {
+      console.log('Random image error:', error);
+      Alert.alert('Connection error', 'Unable to get random image from cloud.');
+    } finally {
+      setIsRandomImageLoading(false);
+    }
   };
   // View Mind Map
   const handleViewMindMap = () => {
@@ -670,6 +689,14 @@ const NoteEditorScreen = () => {
         </View>
 
         <MyButton title="📷 Add Photos" variant="primary" onPress={pickImages} />
+
+        <MyButton
+          title={isRandomImageLoading ? 'Generating Image...' : 'Generate Random Image'}
+          variant="primary"
+          onPress={handleGenerateRandomImage}
+          disabled={isRandomImageLoading}
+          style={{ marginTop: 10 }}
+        />
 
         {/* Mind Map */}
         <MyButton
