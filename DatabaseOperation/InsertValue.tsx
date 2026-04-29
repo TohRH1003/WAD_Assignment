@@ -84,7 +84,8 @@ export const InsertFolder = (
           });
         },
         (_, error) => {
-          reject(error);
+          console.log("SQL Error in InsertFolder:", error); // This will show the REAL error in your terminal
+          reject(normalizeSqliteError(error)); // Use the helper here too!
           return false;
         },
       );
@@ -95,7 +96,7 @@ export const InsertFolder = (
 export const InsertNote = (
   title: string,
   username: string,
-  folder_id: string | null,
+  folder_id: string | null | number,
 ) => {
   return new Promise((resolve, reject) => {
     db.transaction(tx => {

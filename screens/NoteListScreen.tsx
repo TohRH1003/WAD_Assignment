@@ -6,7 +6,7 @@
   • Refreshes the list every time the screen comes into focus
 */
 
-import React, {useState} from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -38,7 +38,8 @@ interface NoteRow {
   updated_at: string;
   is_pinned: number;
   is_deleted: number;
-  folder_id: string | null;
+  folder_id: string | null | number;
+  folder_name?: string; // Add this line
 }
 
 const formatDate = (iso: string): string => {
@@ -53,17 +54,17 @@ const formatDate = (iso: string): string => {
   }
 };
 
-const NoteListScreen = ({navigation}: any) => {
+const NoteListScreen = ({ navigation }: any) => {
   const route = useRoute<RoutePropType>();
-// =======
-// const NoteListScreen = ({navigation}:any) => {
-//   const route = useRoute<RouteProp<RootStackParamList, 'NoteList'>>();
-// >>>>>>> f949056ae0cd80c1d1628ed2fdeb8670bc3862fa
-// I only addede this part to the comment to solve the merge conlict,
-// please make the necessary changes if needed.
+  // =======
+  // const NoteListScreen = ({navigation}:any) => {
+  //   const route = useRoute<RouteProp<RootStackParamList, 'NoteList'>>();
+  // >>>>>>> f949056ae0cd80c1d1628ed2fdeb8670bc3862fa
+  // I only addede this part to the comment to solve the merge conlict,
+  // please make the necessary changes if needed.
 
   const bookmarkIcon = require('../assets/bookmark.png');
-  const {username} = route.params;
+  const { username } = route.params;
 
   const [notes, setNotes] = useState<NoteRow[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -71,21 +72,39 @@ const NoteListScreen = ({navigation}: any) => {
   const [newNoteTitle, setNewNoteTitle] = useState('');
   const [searchText, setSearchText] = useState('');
 
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     const load = async () => {
+  //       try {
+  //         setIsLoading(true);
+  //         const data = (await ReadNoteData(username)) as NoteRow[];
+  //         setNotes(data);
+  //       } catch (err: any) {
+  //         console.log('NoteList load error:', err?.message);
+  //       } finally {
+  //         setIsLoading(false);
+  //       }
+  //     };
+  //     load();
+  //   }, [username]),
+  // );
+
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       const load = async () => {
         try {
           setIsLoading(true);
-          const data = (await ReadNoteData(username)) as NoteRow[];
-          setNotes(data);
-        } catch (err: any) {
-          console.log('NoteList load error:', err?.message);
+          setNotes([]); // Clear the old list temporarily to force a clean refresh
+          const data = await ReadNoteData(username);
+          setNotes(data as NoteRow[]);
+        } catch (err) {
+          console.log(err);
         } finally {
           setIsLoading(false);
         }
       };
       load();
-    }, [username]),
+    }, [username])
   );
 
   const handleCreateNote = () => {
@@ -96,7 +115,7 @@ const NoteListScreen = ({navigation}: any) => {
     }
     setShowNewNoteModal(false);
     setNewNoteTitle('');
-    navigation.navigate('NoteEditor', {username, noteTitle: trimmed});
+    navigation.navigate('NoteEditor', { username, noteTitle: trimmed });
   };
 
   const handleOpenNote = (note: NoteRow) => {
@@ -108,61 +127,61 @@ const NoteListScreen = ({navigation}: any) => {
   };
 
   const handleTogglePin = async (note: NoteRow) => {
-  try {
-    const newPinStatus = note.is_pinned ? 0 : 1;
+    try {
+      const newPinStatus = note.is_pinned ? 0 : 1;
 
-    await UpdateNotePinStatus(note.note_id, newPinStatus);
+      await UpdateNotePinStatus(note.note_id, newPinStatus);
 
-    setNotes(prevNotes =>
-      prevNotes.map(item =>
-        item.note_id === note.note_id
-          ? {...item, is_pinned: newPinStatus}
-          : item,
-      ),
-    );
-  } catch (err: any) {
-    console.log('Pin note error:', err?.message);
-    Alert.alert('Error', 'Unable to update pin status.');
-  }
-};
+      setNotes(prevNotes =>
+        prevNotes.map(item =>
+          item.note_id === note.note_id
+            ? { ...item, is_pinned: newPinStatus }
+            : item,
+        ),
+      );
+    } catch (err: any) {
+      console.log('Pin note error:', err?.message);
+      Alert.alert('Error', 'Unable to update pin status.');
+    }
+  };
 
-const handleSoftDeleteNote = (note: NoteRow) => {
-  Alert.alert(
-    'Delete note',
-    `Are you sure you want to delete "${note.title}"?`,
-    [
-      {
-        text: 'Cancel',
-        style: 'cancel',
-      },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await SoftDeleteNote(note.note_id);
-
-            setNotes(prevNotes =>
-              prevNotes.filter(item => item.note_id !== note.note_id),
-            );
-          } catch (err: any) {
-            console.log('Soft delete note error:', err?.message);
-            Alert.alert(
-              'Error',
-              err?.message || 'Unable to delete note.',
-            );
-          }
+  const handleSoftDeleteNote = (note: NoteRow) => {
+    Alert.alert(
+      'Delete note',
+      `Are you sure you want to delete "${note.title}"?`,
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
         },
-      },
-    ],
-  );
-};
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await SoftDeleteNote(note.note_id);
 
-const filteredNotes = notes
-  .filter(note =>
-    note.title.toLowerCase().includes(searchText.toLowerCase()),
-  )
-  .sort((a, b) => b.is_pinned - a.is_pinned);
+              setNotes(prevNotes =>
+                prevNotes.filter(item => item.note_id !== note.note_id),
+              );
+            } catch (err: any) {
+              console.log('Soft delete note error:', err?.message);
+              Alert.alert(
+                'Error',
+                err?.message || 'Unable to delete note.',
+              );
+            }
+          },
+        },
+      ],
+    );
+  };
+
+  const filteredNotes = notes
+    .filter(note =>
+      note.title.toLowerCase().includes(searchText.toLowerCase()),
+    )
+    .sort((a, b) => b.is_pinned - a.is_pinned);
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
@@ -171,6 +190,18 @@ const filteredNotes = notes
           <Text style={styles.title}>My Notes</Text>
           <Text style={styles.subtitle}>Welcome, {username}</Text>
         </View>
+        {/* FOLDER MANAGEMENT BUTTON */}
+        <MyButton
+          title="Folders"
+          variant="header"
+          onPress={() => navigation.navigate('FolderList', { username })}
+        />
+
+        <MyButton
+          title="Profile"
+          variant="header"
+          onPress={() => navigation.navigate('Profile', { username })}
+        />
       </View>
 
       <TextInput
@@ -216,10 +247,17 @@ const filteredNotes = notes
                 Last updated: {formatDate(note.updated_at)}
               </Text>
 
+              {/* --- ADD FOLDER BADGE HERE --- */}
+              {note.folder_name && (
+                <View style={listStyles.folderBadge}>
+                  <Text style={listStyles.folderText}>📁 {note.folder_name}</Text>
+                </View>
+              )}
+
               <TouchableOpacity
                 onPress={event => {
-                event.stopPropagation();
-                handleTogglePin(note);
+                  event.stopPropagation();
+                  handleTogglePin(note);
                 }}
                 style={listStyles.bookmarkButton}
                 activeOpacity={0.7}>
@@ -280,8 +318,8 @@ const filteredNotes = notes
 };
 
 const listStyles = StyleSheet.create({
-  centered: {paddingVertical: 40, alignItems: 'center'},
-  modalLabel: {fontSize: 14, fontWeight: '600', color: '#374151', marginBottom: 6},
+  centered: { paddingVertical: 40, alignItems: 'center' },
+  modalLabel: { fontSize: 14, fontWeight: '600', color: '#374151', marginBottom: 6 },
   modalInput: {
     borderWidth: 1,
     borderColor: '#d1d5db',
@@ -295,20 +333,20 @@ const listStyles = StyleSheet.create({
   },
 
   searchInput: {
-  borderWidth: 1,
-  borderColor: '#d1d5db',
-  borderRadius: 12,
-  paddingHorizontal: 14,
-  paddingVertical: 12,
-  backgroundColor: '#ffffff',
-  color: '#111827',
-  fontSize: 15,
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    backgroundColor: '#ffffff',
+    color: '#111827',
+    fontSize: 15,
   },
 
   noteItemWithBookmark: {
-  position: 'relative',
-  paddingRight: 50,
-  paddingBottom: 45,
+    position: 'relative',
+    paddingRight: 50,
+    paddingBottom: 45,
   },
 
   bookmarkButton: {
@@ -343,9 +381,25 @@ const listStyles = StyleSheet.create({
   },
 
   deleteButtonText: {
-   color: '#b91c1c',
-   fontWeight: '600',
-   fontSize: 13,
+    color: '#b91c1c',
+    fontWeight: '600',
+    fontSize: 13,
+  },
+
+  // Add folder style
+  folderBadge: {
+    backgroundColor: '#e0f2fe',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    marginTop: 6,
+  },
+
+  folderText: {
+    fontSize: 11,
+    color: '#0369a1',
+    fontWeight: '700',
   },
 });
 

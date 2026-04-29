@@ -20,9 +20,10 @@ import {
   DrawerItemList,
 } from '@react-navigation/drawer';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import LoginScreen from './screens/loginScreen';
+import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import NoteListScreen from './screens/NoteListScreen';
+import FolderListScreen from './screens/FolderListScreen'; //added folder list
 import ProfileScreen from './screens/ProfileScreen';
 import EditScreen from './screens/EditProfileScreen';
 import NoteEditorScreen from './screens/NoteEditorScreen';
@@ -34,7 +35,7 @@ import {
   MainDrawerParamList,
   RootStackParamList,
 } from './AppStackTypes';
-
+import MindMapScreen from './screens/MindMapScreen';
 const Stack = createStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<AuthTabParamList>();
 const Drawer = createDrawerNavigator<MainDrawerParamList>();
@@ -43,9 +44,9 @@ const AuthTabs = () => {
   return (
     <Tab.Navigator
       initialRouteName="Login"
-      screenOptions={({route}) => ({
+      screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarIcon: ({focused, color, size}) => {
+        tabBarIcon: ({ focused, color, size }) => {
           let iconName: string;
 
           if (route.name === 'Login') {
@@ -190,11 +191,12 @@ const App = () => {
       <SafeAreaView style={styles.screen}>
         <Stack.Navigator
           initialRouteName="Auth"
-          screenOptions={{headerShown: false}}>
+          screenOptions={{ headerShown: false }}>
           <Stack.Screen name="Auth" component={AuthTabs} />
           <Stack.Screen name="MainDrawer" component={MainDrawer} />
           <Stack.Screen name="Edit" component={EditScreen} />
           <Stack.Screen name="NoteEditor" component={NoteEditorScreen} />
+          <Stack.Screen name="MindMap" component={MindMapScreen} options={{ title: 'Visual Mind Map' }}/>
         </Stack.Navigator>
       </SafeAreaView>
     </NavigationContainer>

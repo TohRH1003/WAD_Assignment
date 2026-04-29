@@ -39,15 +39,14 @@ export const CreateTable = () => { //Method used to create table in Sqlite
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL,
         is_deleted INTEGER DEFAULT 0,
-        is_pinned INTEGER DEFAULT 0,
-        username TEXT,
+        username TEXT NOT NULL,
         parent_folder_id TEXT, 
         FOREIGN KEY (username) REFERENCES User(username) ON DELETE CASCADE,
         FOREIGN KEY (parent_folder_id) REFERENCES Folder(folder_id) ON DELETE CASCADE
         )`,
       [],
       () => console.log('Folder table created'),
-      error => console.log('Error:', error),
+      error => console.log('Folder Error:', error),
     );
 
     tx.executeSql(  //Add Note table
@@ -61,6 +60,7 @@ export const CreateTable = () => { //Method used to create table in Sqlite
         is_deleted INTEGER DEFAULT 0,                  
         username TEXT,
         folder_id TEXT,
+        image_uri TEXT,
         FOREIGN KEY (username) REFERENCES User(username) ON DELETE CASCADE,
         FOREIGN KEY (folder_id) REFERENCES Folder(folder_id) ON DELETE SET NULL
         )`,
@@ -84,3 +84,27 @@ export const CreateTable = () => { //Method used to create table in Sqlite
     );
   });
 };
+<<<<<<< HEAD
+=======
+
+export const UpdateNotePinStatus = (noteId: number, isPinned: number) => {
+  return new Promise((resolve, reject) => {
+    db.transaction(tx => {
+      tx.executeSql(
+        `UPDATE Note 
+         SET is_pinned = ?, updated_at = datetime('now') 
+         WHERE note_id = ?`,
+        [isPinned, noteId],
+        (_, result) => {
+          resolve(result);
+        },
+        (_, error) => {
+          console.log('Update pin SQL error:', error.message);
+          reject(error);
+          return false;
+        },
+      );
+    });
+  });
+};
+>>>>>>> fb355ba1bbac73e902b649e48e0c823eaaa6391b
