@@ -181,6 +181,17 @@ const MainDrawer = ({route}: any) => {
           ),
         }}
       />
+      <Drawer.Screen
+        name="FolderList"
+        component={FolderListScreen}
+        initialParams={{username}}
+        options={{
+          title: 'Folders',
+          drawerIcon: ({color, size}) => (
+            <Ionicons name="folder-open-outline" size={size} color={color} />
+          ),
+        }}
+      />
     </Drawer.Navigator>
   );
 };

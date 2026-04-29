@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 
 const MindMapScreen = ({ route, navigation }: any) => {
-  const { content, title, imageUri } = route.params;
+  const { content = '', title = 'Mind Map', imageUri } = route.params ?? {};
   const lines = content.split('\n').filter((line: string) => line.trim() !== '');
 
   return (
