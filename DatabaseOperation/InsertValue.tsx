@@ -59,40 +59,6 @@ export const InsertUser = (
   });
 };
 
-export const InsertFolder = (
-  folder_name: string,
-  username: string,
-  parent_folder_id: string | null = null,
-) => {
-  return new Promise((resolve, reject) => {
-    db.transaction(tx => {
-      tx.executeSql(
-        `INSERT INTO Folder (folder_name, created_at, updated_at, username, parent_folder_id, is_deleted, is_pinned)
-         VALUES(?, ?, ?, ?, ?, 0, 0)`,
-        [
-          folder_name,
-          new Date().toISOString(),
-          new Date().toISOString(),
-          username,
-          parent_folder_id,
-        ],
-        (_, results) => {
-          resolve({
-            success: true,
-            folderId: results.insertId,
-            folderName: folder_name,
-            rowsAffected: results.rowsAffected,
-          });
-        },
-        (_, error) => {
-          console.log("SQL Error in InsertFolder:", error); // This will show the REAL error in your terminal
-          reject(normalizeSqliteError(error)); // Use the helper here too!
-          return false;
-        },
-      );
-    });
-  });
-};
 
 export const InsertNote = (
   title: string,
@@ -118,30 +84,6 @@ export const InsertNote = (
             noteId: results.insertId,
             rowsAffected: results.rowsAffected,
           });
-        },
-        (_, error) => {
-          reject(error);
-          return false;
-        },
-      );
-    });
-  });
-};
-
-export const InsertImage = (
-  local_path: string,
-  width: number,
-  height: number,
-  note_id: number,
-) => {
-  return new Promise((resolve, reject) => {
-    db.transaction(tx => {
-      tx.executeSql(
-        `INSERT INTO Image (local_path, width, height, note_id)
-         VALUES(?, ?, ?, ?)`,
-        [local_path, width, height, note_id],
-        (_, results) => {
-          resolve(results);
         },
         (_, error) => {
           reject(error);

@@ -8,10 +8,6 @@ Note: I havent test all the Function, I just write it
 import { db, CreateTable } from './CreateTable';
 import { CLOUD_BASE_URL } from '../services/cloudService';
 
-// Call this function to initialize tables
-export const initializeDatabase = () => {
-  CreateTable();
-};
 
 export const UpdateFolderName = (folderId: number, newName: string) => {
   console.log(`Attempting to update folder ${folderId} to: ${newName}`);

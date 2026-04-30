@@ -8,9 +8,6 @@ Note: I havent test all the Function, I just write it
 import {db, CreateTable} from './CreateTable';
 
 // Call this function to initialize tables
-export const initializeDatabase = () => {
-  CreateTable();
-};
 
 //Function to update note content only
 export const UpdateNoteContent = (note_id: number, content: any) => {

@@ -5,10 +5,6 @@ Note: I havent test all the Function, I just write it
 
 import {db, CreateTable} from './CreateTable';
 
-export const initializeDatabase = () => {
-  CreateTable();
-};
-
 export const normalizeSqliteError = (error: any) => {
   const rawMessage = `${error?.message || ''} ${
     error?.code || ''

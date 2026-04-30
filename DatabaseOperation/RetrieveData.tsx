@@ -1,36 +1,5 @@
 import { db, CreateTable } from './CreateTable';
 
-export const initializeDatabase = () => {
-  CreateTable();
-};
-
-export const ReadUserData = (username: string) => {
-  return new Promise((resolve, reject) => {
-    if (!username || username.trim() === '') {
-      reject(new Error('Username is required'));
-      return;
-    }
-
-    db.transaction(tx => {
-      tx.executeSql(
-        'SELECT * FROM User WHERE username = ?',
-        [username.trim()],
-        (_, results) => {
-          if (results.rows.length > 0) {
-            resolve(results.rows.item(0));
-            return;
-          }
-
-          reject(new Error(`User with username "${username}" not found`));
-        },
-        (_, error) => {
-          reject(error);
-          return false;
-        },
-      );
-    });
-  });
-};
 
 // export const ReadNoteData = (username: string) => {
 //   return new Promise((resolve, reject) => {
@@ -125,36 +94,6 @@ export const ReadNoteContent = (note_id: number) => {
           }
 
           reject(new Error(`Note with ID ${note_id} not found or is deleted`));
-        },
-        (_, error) => {
-          reject(error);
-          return false;
-        },
-      );
-    });
-  });
-};
-
-export const ReadFolderData = (folder_id: number) => {
-  return new Promise((resolve, reject) => {
-    if (!folder_id) {
-      reject(new Error('Folder ID is required'));
-      return;
-    }
-
-    db.transaction(tx => {
-      tx.executeSql(
-        'SELECT * FROM Folder WHERE folder_id = ? AND is_deleted = 0',
-        [folder_id],
-        (_, results) => {
-          if (results.rows.length > 0) {
-            resolve(results.rows.item(0));
-            return;
-          }
-
-          reject(
-            new Error(`Folder with ID "${folder_id}" not found or is deleted`),
-          );
         },
         (_, error) => {
           reject(error);
