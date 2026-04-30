@@ -171,17 +171,6 @@ const MainDrawer = ({route}: any) => {
         }}
       />
       <Drawer.Screen
-        name="Profile"
-        component={ProfileScreen}
-        initialParams={{username}}
-        options={{
-          title: 'Profile',
-          drawerIcon: ({color, size}) => (
-            <Ionicons name="person-circle-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Drawer.Screen
         name="FolderList"
         component={FolderListScreen}
         initialParams={{username}}
@@ -189,6 +178,17 @@ const MainDrawer = ({route}: any) => {
           title: 'Folders',
           drawerIcon: ({color, size}) => (
             <Ionicons name="folder-open-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="Profile"
+        component={ProfileScreen}
+        initialParams={{username}}
+        options={{
+          title: 'Profile',
+          drawerIcon: ({color, size}) => (
+            <Ionicons name="person-circle-outline" size={size} color={color} />
           ),
         }}
       />
