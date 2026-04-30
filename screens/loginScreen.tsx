@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {Alert, ScrollView, Text, View} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import {loginUser} from '../DatabaseOperation/Authentication';
-import {initializeDatabase} from '../DatabaseOperation/InsertValue';
+import {initializeDatabase} from '../DatabaseOperation/DBOperation';
 import {MyButton, MyTextInput} from '../components/MyCustomComponent';
 import QuoteCard from '../components/QuoteCard';
 import {getDailyQuote} from '../services/cloudService';

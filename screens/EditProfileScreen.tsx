@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {Alert, ScrollView, Text, View} from 'react-native';
 import {getUserByUsername} from '../DatabaseOperation/Authentication';
-import {UpdateUserInfo} from '../DatabaseOperation/UpdateUser';
+import {UpdateUserInfo} from '../DatabaseOperation/DBOperation';
 import {MyButton, MyTextInput} from '../components/MyCustomComponent';
 import {appStyles as styles} from '../styles/AppStyles';
 

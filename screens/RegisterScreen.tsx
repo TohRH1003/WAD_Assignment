@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {Alert, ScrollView, Text, View} from 'react-native';
-import {initializeDatabase, InsertUser} from '../DatabaseOperation/InsertValue';
+import {initializeDatabase, InsertUser} from '../DatabaseOperation/DBOperation';
 import {MyButton, MyTextInput} from '../components/MyCustomComponent';
 import {appStyles as styles} from '../styles/AppStyles';
 

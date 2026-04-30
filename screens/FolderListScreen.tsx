@@ -18,10 +18,10 @@ import {
   ReadUserFolders,
   CreateNewFolder,
   SoftDeleteFolder,
-  ReadNotesByFolder
-} from '../DatabaseOperation/RetrieveData';
+  ReadNotesByFolder,
+} from '../DatabaseOperation/DBOperation';
 
-import { UpdateFolderName } from '../DatabaseOperation/UpdateFolder';
+import {UpdateFolderName} from '../DatabaseOperation/DBOperation';
 
 const FolderListScreen = ({ navigation, route }: any) => {
   const { username } = route.params;

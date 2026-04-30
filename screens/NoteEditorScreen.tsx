@@ -26,15 +26,15 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import { RouteProp, useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../AppStackTypes';
-import { InsertNote } from '../DatabaseOperation/InsertValue';
-import { ReadNoteContent } from '../DatabaseOperation/RetrieveData';
-import { UpdateNoteContent } from '../DatabaseOperation/UpdateNote';
-import { UpdateNoteFolder } from '../DatabaseOperation/UpdateFolder';
-import { UpdateNoteImage } from '../DatabaseOperation/UpdateFolder';
+import { InsertNote } from '../DatabaseOperation/DBOperation';
+import {ReadNoteContent} from '../DatabaseOperation/DBOperation';
+import {UpdateNoteContent} from '../DatabaseOperation/DBOperation';
+import {UpdateNoteFolder} from '../DatabaseOperation/DBOperation';
+import {UpdateNoteImage} from '../DatabaseOperation/DBOperation';
 import { MyButton } from '../components/MyCustomComponent';
 import { getRandomImage } from '../services/cloudService';
 import { syncImagesToCloud } from '../services/cloudService';
-import { ReadUserFolders } from '../DatabaseOperation/RetrieveData';
+import {ReadUserFolders} from '../DatabaseOperation/DBOperation';
 
 //  must making the Types first ──────────────────────────────────────────────
 

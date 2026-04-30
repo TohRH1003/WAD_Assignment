@@ -2,7 +2,7 @@ import React, {useCallback, useState} from 'react';
 import {Alert, ScrollView, Text, View} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import {getUserByUsername} from '../DatabaseOperation/Authentication';
-import {ReadNoteData} from '../DatabaseOperation/RetrieveData';
+import {ReadNoteData} from '../DatabaseOperation/DBOperation';
 import GuideModal from '../components/GuideModal';
 import {MyButton} from '../components/MyCustomComponent';
 import QuoteCard from '../components/QuoteCard';
