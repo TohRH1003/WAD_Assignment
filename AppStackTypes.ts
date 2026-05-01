@@ -19,7 +19,6 @@ export type MainDrawerParamList = {
   NoteList: {username: string};
   FolderList: {username: string}; // Added FolderList screen type
   Profile: {username: string};
-  MindMap: {content?: string; title?: string; imageUri?: string};
 };
 
 export type RootStackParamList = {
