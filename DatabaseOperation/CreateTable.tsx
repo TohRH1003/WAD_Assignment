@@ -71,23 +71,4 @@ export const CreateTable = () => { //Method used to create table in Sqlite
   });
 };
 
-export const UpdateNotePinStatus = (noteId: number, isPinned: number) => {
-  return new Promise((resolve, reject) => {
-    db.transaction(tx => {
-      tx.executeSql(
-        `UPDATE Note 
-         SET is_pinned = ?, updated_at = datetime('now') 
-         WHERE note_id = ?`,
-        [isPinned, noteId],
-        (_, result) => {
-          resolve(result);
-        },
-        (_, error) => {
-          console.log('Update pin SQL error:', error.message);
-          reject(error);
-          return false;
-        },
-      );
-    });
-  });
-};
+
