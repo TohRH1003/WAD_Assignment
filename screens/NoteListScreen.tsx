@@ -183,13 +183,14 @@ const NoteListScreen = ({ navigation }: any) => {
   const handleTogglePin = async (note: NoteRow) => {
     try {
       const newPinStatus = note.is_pinned ? 0 : 1;
+      const now = new Date().toISOString();
 
       await UpdateNotePinStatus(note.note_id, newPinStatus);
 
       setNotes(prevNotes =>
         prevNotes.map(item =>
           item.note_id === note.note_id
-            ? { ...item, is_pinned: newPinStatus }
+            ? { ...item, is_pinned: newPinStatus, updated_at: now }
             : item,
         ),
       );
