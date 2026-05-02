@@ -239,25 +239,4 @@ export const getRandomImage = () => {
     });
 };
 
-export const syncImagesToCloud = async (noteId: string | number, images: string[]) => {
-  try {
-    const response = await fetch(`${CLOUD_BASE_URL}/notes/${noteId}/images`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ images }),
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to sync images to cloud');
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Cloud Sync Error:', error);
-    throw error;
-  }
-};
-
 export { CLOUD_BASE_URL };

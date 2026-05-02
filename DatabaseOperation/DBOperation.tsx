@@ -4,7 +4,6 @@ Note: I havent test all the Function, I just write it
 */
 
 import {db, CreateTable} from './CreateTable';
-import {CLOUD_BASE_URL} from '../services/cloudService';
 
 export const initializeDatabase = () => {
   CreateTable();
@@ -355,7 +354,7 @@ export const UpdateNoteImage = async (
   noteId: string | number,
   images: string[],
 ) => {
-  // 1. Save to Local SQLite (This makes it stay when you view the note again)
+  // Save to Local SQLite (This makes it stay when you view the note again)
   const imagesString = JSON.stringify(images);
   return new Promise((resolve, reject) => {
     db.transaction(tx => {
@@ -373,13 +372,6 @@ export const UpdateNoteImage = async (
         },
       );
     });
-
-    // 2. Keep your Cloud update if you are using service.js
-    fetch(`${CLOUD_BASE_URL}/notes/${noteId}/images`, {
-      method: 'PUT',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({images}),
-    }).catch(err => console.log('Cloud sync failed:', err));
   });
 };
 
