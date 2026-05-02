@@ -228,7 +228,7 @@ const FolderListScreen = ({ navigation, route }: any) => {
         </View>
 
         <MyButton
-          title="Return to Notes"
+          title="Back to Notes"
           variant="secondary"
           onPress={() => navigation.navigate('NoteList', { username })}
         />
