@@ -8,8 +8,7 @@
   ─────────────────────────────────────────────────────────────────────────────
 */
 
-
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {
   Alert,
   Modal,
@@ -22,18 +21,22 @@ import {
   Image,
 } from 'react-native';
 
-import { launchImageLibrary } from 'react-native-image-picker';
-import { RouteProp, useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../AppStackTypes';
-import { InsertNote } from '../DatabaseOperation/DBOperation';
+import {launchImageLibrary} from 'react-native-image-picker';
+import {
+  RouteProp,
+  useNavigation,
+  useRoute,
+  useFocusEffect,
+} from '@react-navigation/native';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {RootStackParamList} from '../AppStackTypes';
+import {InsertNote} from '../DatabaseOperation/DBOperation';
 import {ReadNoteContent} from '../DatabaseOperation/DBOperation';
 import {UpdateNoteContent} from '../DatabaseOperation/DBOperation';
 import {UpdateNoteFolder} from '../DatabaseOperation/DBOperation';
 import {UpdateNoteImage} from '../DatabaseOperation/DBOperation';
-import { MyButton } from '../components/MyCustomComponent';
-import { getRandomImage } from '../services/cloudService';
-import { syncImagesToCloud } from '../services/cloudService';
+import {MyButton} from '../components/MyCustomComponent';
+import {getRandomImage} from '../services/cloudService';
 import {ReadUserFolders} from '../DatabaseOperation/DBOperation';
 
 //  must making the Types first ──────────────────────────────────────────────
@@ -63,11 +66,11 @@ interface FormattingState {
 
 // declare Constants here ──────────────────────────────────────────────────────────
 
-const FONT_SIZES: { label: string; value: number }[] = [
-  { label: 'Small', value: 14 },
-  { label: 'Normal', value: 16 },
-  { label: 'Large', value: 20 },
-  { label: 'Heading', value: 26 },
+const FONT_SIZES: {label: string; value: number}[] = [
+  {label: 'Small', value: 14},
+  {label: 'Normal', value: 16},
+  {label: 'Large', value: 20},
+  {label: 'Heading', value: 26},
 ];
 
 const DEFAULT_FORMATTING: FormattingState = {
@@ -100,7 +103,7 @@ const storageStringToSegments = (raw: string): Segment[] | null => {
 const plainTextToSegments = (text: string): Segment[] => {
   const lines = String(text ?? '').split('\n');
   if (lines.length === 0) {
-    return [{ id: makeId(), text: '', ...DEFAULT_FORMATTING }];
+    return [{id: makeId(), text: '', ...DEFAULT_FORMATTING}];
   }
 
   return lines.map(line => ({
@@ -147,7 +150,12 @@ const NoteEditorScreen = () => {
   const navigation = useNavigation<NavProp>();
   const route = useRoute<RoutePropType>();
 
-  const { username, noteId, noteTitle: initialTitle, noteTemplate } = route.params;
+  const {
+    username,
+    noteId,
+    noteTitle: initialTitle,
+    noteTemplate,
+  } = route.params;
 
   // STATE ──────────────────────────────────────────────────────────────────
   const [title, setTitle] = useState(initialTitle ?? '');
@@ -166,7 +174,7 @@ const NoteEditorScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isRandomImageLoading, setIsRandomImageLoading] = useState(false);
   const [images, setImages] = useState<string[]>([]);
-  const [noteContent, setNoteContent] = useState("");
+  const [noteContent, setNoteContent] = useState('');
 
   // 1. Add these new states
   const [folderId, setFolderId] = useState<number | null>(null);
@@ -198,12 +206,13 @@ const NoteEditorScreen = () => {
         if (data.images) {
           try {
             // If it's already an array, use it; otherwise, parse the string
-            const parsedImages = typeof data.images === 'string'
-              ? JSON.parse(data.images)
-              : data.images;
+            const parsedImages =
+              typeof data.images === 'string'
+                ? JSON.parse(data.images)
+                : data.images;
             setImages(Array.isArray(parsedImages) ? parsedImages : []);
           } catch (e) {
-            console.error("Error parsing images:", e);
+            console.error('Error parsing images:', e);
             setImages([]);
           }
         }
@@ -221,41 +230,46 @@ const NoteEditorScreen = () => {
             setSegments(parsed);
           } else {
             // Fallback if content is just a plain string
-            setSegments([{ id: makeId(), text: data.content, ...DEFAULT_FORMATTING }]);
+            setSegments([
+              {id: makeId(), text: data.content, ...DEFAULT_FORMATTING},
+            ]);
           }
         }
       })
-      .catch(err => console.log("Load error:", err))
+      .catch(err => console.log('Load error:', err))
       .finally(() => setIsLoading(false));
   }, [noteId]);
 
   // 3. Add the picker function
   const handleSelectFolder = async () => {
     try {
-      const userFolders = await ReadUserFolders(username) as any[];
+      const userFolders = (await ReadUserFolders(username)) as any[];
       setAvailableFolders(Array.isArray(userFolders) ? userFolders : []);
       setShowFolderPicker(true);
     } catch (error) {
-      Alert.alert("Error", "Could not load folders.");
+      Alert.alert('Error', 'Could not load folders.');
     }
   };
 
   // Add image
   const pickImages = () => {
-    launchImageLibrary({
-      mediaType: 'photo',
-      quality: 1,
-      selectionLimit: 0
-    }, (response) => {
-      if (response.assets) {
-        // Use asset.uri - this is the temporary local path the app can access
-        const newUris = response.assets
-          .map(asset => asset.uri)
-          .filter((uri): uri is string => !!uri);
+    launchImageLibrary(
+      {
+        mediaType: 'photo',
+        quality: 1,
+        selectionLimit: 0,
+      },
+      response => {
+        if (response.assets) {
+          // Use asset.uri - this is the temporary local path the app can access
+          const newUris = response.assets
+            .map(asset => asset.uri)
+            .filter((uri): uri is string => !!uri);
 
-        setImages(prev => [...prev, ...newUris]);
-      }
-    });
+          setImages(prev => [...prev, ...newUris]);
+        }
+      },
+    );
   };
 
   const handleGenerateRandomImage = async () => {
@@ -277,12 +291,13 @@ const NoteEditorScreen = () => {
   // View Mind Map
   const handleViewMindMap = () => {
     // Join all segment texts with newlines to create the content string
-    const fullContent = segments
-      .map(s => s.text)
-      .join('\n');
+    const fullContent = segments.map(s => s.text).join('\n');
 
     if (!fullContent.trim()) {
-      Alert.alert("Empty Note", "Please add some text before viewing the Mind Map.");
+      Alert.alert(
+        'Empty Note',
+        'Please add some text before viewing the Mind Map.',
+      );
       return;
     }
 
@@ -362,53 +377,50 @@ const NoteEditorScreen = () => {
       if (!activeSegmentId) {
         // If nothing focused, apply to the last segment
 
-
         setSegments(prev => {
           const updated = [...prev];
-          const last = { ...updated[updated.length - 1], ...patch };
+          const last = {...updated[updated.length - 1], ...patch};
           updated[updated.length - 1] = last;
           return updated;
         });
 
-
-
         setFormatting(prev => ({
           ...prev,
-          ...(patch.bold !== undefined ? { bold: patch.bold } : {}),
-          ...(patch.italic !== undefined ? { italic: patch.italic } : {}),
-          ...(patch.underline !== undefined ? { underline: patch.underline } : {}),
-          ...(patch.fontSize !== undefined ? { fontSize: patch.fontSize } : {}),
-          ...(patch.alignment !== undefined ? { alignment: patch.alignment } : {}),
+          ...(patch.bold !== undefined ? {bold: patch.bold} : {}),
+          ...(patch.italic !== undefined ? {italic: patch.italic} : {}),
+          ...(patch.underline !== undefined
+            ? {underline: patch.underline}
+            : {}),
+          ...(patch.fontSize !== undefined ? {fontSize: patch.fontSize} : {}),
+          ...(patch.alignment !== undefined
+            ? {alignment: patch.alignment}
+            : {}),
         }));
         return;
       }
 
-
-
       setSegments(prev =>
-        prev.map(s =>
-          s.id === activeSegmentId ? { ...s, ...patch } : s,
-        ),
+        prev.map(s => (s.id === activeSegmentId ? {...s, ...patch} : s)),
       );
       setFormatting(prev => ({
         ...prev,
-        ...(patch.bold !== undefined ? { bold: patch.bold } : {}),
-        ...(patch.italic !== undefined ? { italic: patch.italic } : {}),
-        ...(patch.underline !== undefined ? { underline: patch.underline } : {}),
-        ...(patch.fontSize !== undefined ? { fontSize: patch.fontSize } : {}),
-        ...(patch.alignment !== undefined ? { alignment: patch.alignment } : {}),
+        ...(patch.bold !== undefined ? {bold: patch.bold} : {}),
+        ...(patch.italic !== undefined ? {italic: patch.italic} : {}),
+        ...(patch.underline !== undefined ? {underline: patch.underline} : {}),
+        ...(patch.fontSize !== undefined ? {fontSize: patch.fontSize} : {}),
+        ...(patch.alignment !== undefined ? {alignment: patch.alignment} : {}),
       }));
     },
     [activeSegmentId],
   );
 
-  const toggleBold = () => applyToActive({ bold: !formatting.bold });
-  const toggleItalic = () => applyToActive({ italic: !formatting.italic });
+  const toggleBold = () => applyToActive({bold: !formatting.bold});
+  const toggleItalic = () => applyToActive({italic: !formatting.italic});
   const toggleUnderline = () =>
-    applyToActive({ underline: !formatting.underline });
-  const setAlignment = (a: Alignment) => applyToActive({ alignment: a });
+    applyToActive({underline: !formatting.underline});
+  const setAlignment = (a: Alignment) => applyToActive({alignment: a});
   const applyFontSize = (size: number) => {
-    applyToActive({ fontSize: size });
+    applyToActive({fontSize: size});
     setShowFontPicker(false);
   };
 
@@ -445,17 +457,8 @@ const NoteEditorScreen = () => {
         ]); // Add this helper if needed
 
         Alert.alert('Saved', 'Your note has been saved.', [
-          { text: 'OK', onPress: () => navigation.goBack() },
+          {text: 'OK', onPress: () => navigation.goBack()},
         ]);
-
-        // Cloud Connectivity - Sync to Node.js Service
-        try {
-          await syncImagesToCloud(noteId, images);
-          console.log("Images backed up to cloud memory.");
-        } catch (err) {
-          console.log("Local save worked, but cloud sync failed.");
-        }
-
       } else {
         // this is for new note, insert then update (to get the noteId)
         // const result: any = await InsertNote(title.trim(), username, null);
@@ -463,12 +466,12 @@ const NoteEditorScreen = () => {
         const result: any = await InsertNote(
           title.trim(),
           username,
-          folderId ? String(folderId) : null // Ensure it's a number
+          folderId ? String(folderId) : null, // Ensure it's a number
         );
         await UpdateNoteContent(result.noteId, contentStr);
         await UpdateNoteImage(result.noteId, images);
         Alert.alert('Note created!', 'Your new note has been saved.', [
-          { text: 'OK', onPress: () => navigation.goBack() },
+          {text: 'OK', onPress: () => navigation.goBack()},
         ]);
       }
     } catch (err: any) {
@@ -489,8 +492,6 @@ const NoteEditorScreen = () => {
 
   return (
     <View style={editorStyles.root}>
-
-
       {/* ── Header content below  ── */}
       <View style={editorStyles.header}>
         <TouchableOpacity
@@ -511,35 +512,45 @@ const NoteEditorScreen = () => {
         </TouchableOpacity>
       </View>
 
-
       {/* ── Formatting Toolbar ── */}
       <View style={editorStyles.toolbar}>
-
         {/* Bold button */}
         <TouchableOpacity
-          style={[editorStyles.formatButton,
-          formatting.bold && editorStyles.activeButton]}
-          onPress={toggleBold}
-        >
-          <Image source={require('../assets/bold.png')} style={editorStyles.icon} />
+          style={[
+            editorStyles.formatButton,
+            formatting.bold && editorStyles.activeButton,
+          ]}
+          onPress={toggleBold}>
+          <Image
+            source={require('../assets/bold.png')}
+            style={editorStyles.icon}
+          />
         </TouchableOpacity>
 
         {/* Italic button */}
         <TouchableOpacity
-          style={[editorStyles.formatButton,
-          formatting.italic && editorStyles.activeButton]}
-          onPress={toggleItalic}
-        >
-          <Image source={require('../assets/italic.png')} style={editorStyles.icon} />
+          style={[
+            editorStyles.formatButton,
+            formatting.italic && editorStyles.activeButton,
+          ]}
+          onPress={toggleItalic}>
+          <Image
+            source={require('../assets/italic.png')}
+            style={editorStyles.icon}
+          />
         </TouchableOpacity>
 
         {/* Underline button */}
         <TouchableOpacity
-          style={[editorStyles.formatButton,
-          formatting.underline && editorStyles.activeButton]}
-          onPress={toggleUnderline}
-        >
-          <Image source={require('../assets/underline.png')} style={editorStyles.icon} />
+          style={[
+            editorStyles.formatButton,
+            formatting.underline && editorStyles.activeButton,
+          ]}
+          onPress={toggleUnderline}>
+          <Image
+            source={require('../assets/underline.png')}
+            style={editorStyles.icon}
+          />
         </TouchableOpacity>
 
         <View style={editorStyles.toolbarDivider} />
@@ -563,37 +574,41 @@ const NoteEditorScreen = () => {
 
         {/* Alignment */}
 
-
         <TouchableOpacity
-          style={[editorStyles.alignButton,
-          formatting.alignment === 'left' && editorStyles.activeButton]}
-          onPress={() => setAlignment('left')}
-        >
-          <Image source={require('../assets/align-left.png')} style={editorStyles.icon} />
+          style={[
+            editorStyles.alignButton,
+            formatting.alignment === 'left' && editorStyles.activeButton,
+          ]}
+          onPress={() => setAlignment('left')}>
+          <Image
+            source={require('../assets/align-left.png')}
+            style={editorStyles.icon}
+          />
         </TouchableOpacity>
 
-
-
         <TouchableOpacity
-          style={[editorStyles.alignButton,
-          formatting.alignment === 'center' && editorStyles.activeButton]}
-          onPress={() => setAlignment('center')}
-        >
-          <Image source={require('../assets/align-center.png')} style={editorStyles.icon} />
+          style={[
+            editorStyles.alignButton,
+            formatting.alignment === 'center' && editorStyles.activeButton,
+          ]}
+          onPress={() => setAlignment('center')}>
+          <Image
+            source={require('../assets/align-center.png')}
+            style={editorStyles.icon}
+          />
         </TouchableOpacity>
 
-
-
-
         <TouchableOpacity
-          style={[editorStyles.alignButton,
-          formatting.alignment === 'right' && editorStyles.activeButton]}
-          onPress={() => setAlignment('right')}
-        >
-          <Image source={require('../assets/align-right.png')} style={editorStyles.icon} />
+          style={[
+            editorStyles.alignButton,
+            formatting.alignment === 'right' && editorStyles.activeButton,
+          ]}
+          onPress={() => setAlignment('right')}>
+          <Image
+            source={require('../assets/align-right.png')}
+            style={editorStyles.icon}
+          />
         </TouchableOpacity>
-
-
 
         {/* <View style={editorStyles.toolbarDivider} /> */}
 
@@ -622,18 +637,22 @@ const NoteEditorScreen = () => {
       {/* ── Folder Selector ── */}
       <TouchableOpacity
         onPress={handleSelectFolder}
-        style={editorStyles.folderSelector}
-      >
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Text style={{ fontSize: 16, marginRight: 8 }}>📁</Text>
+        style={editorStyles.folderSelector}>
+        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+          <Text style={{fontSize: 16, marginRight: 8}}>📁</Text>
           <View>
-            <Text style={{ fontSize: 10, color: '#6b7280', fontWeight: '600' }}>FOLDER</Text>
+            <Text style={{fontSize: 10, color: '#6b7280', fontWeight: '600'}}>
+              FOLDER
+            </Text>
             {/* <Text style={{ fontSize: 14, color: '#111827', fontWeight: '500' }}>{folderName}</Text> */}
-            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#111827' }}>{folderName ? String(folderName) : 'General'}
+            <Text style={{fontSize: 16, fontWeight: 'bold', color: '#111827'}}>
+              {folderName ? String(folderName) : 'General'}
             </Text>
           </View>
         </View>
-        <Text style={{ color: '#3dc9f3', fontSize: 12, fontWeight: '700' }}>CHANGE</Text>
+        <Text style={{color: '#3dc9f3', fontSize: 12, fontWeight: '700'}}>
+          CHANGE
+        </Text>
       </TouchableOpacity>
 
       {/* ── Title ── */}
@@ -658,7 +677,7 @@ const NoteEditorScreen = () => {
             value={seg.text}
             onChangeText={text =>
               setSegments(prev =>
-                prev.map(s => (s.id === seg.id ? { ...s, text } : s)),
+                prev.map(s => (s.id === seg.id ? {...s, text} : s)),
               )
             }
             onFocus={() => setActiveSegmentId(seg.id)}
@@ -679,18 +698,34 @@ const NoteEditorScreen = () => {
           />
         ))}
         {/* Other note content (Title, Folder, etc) */}
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginVertical: 10 }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            gap: 10,
+            marginVertical: 10,
+          }}>
           {images.map((uri, index) => (
-            <View key={index} style={{ position: 'relative' }}>
+            <View key={index} style={{position: 'relative'}}>
               <Image
-                source={{ uri: uri ?? '' }}
-                style={{ width: 100, height: 100, borderRadius: 10 }}
+                source={{uri: uri ?? ''}}
+                style={{width: 100, height: 100, borderRadius: 10}}
               />
               <TouchableOpacity
-                style={{ position: 'absolute', top: -5, right: -5, backgroundColor: 'red', borderRadius: 10, padding: 2 }}
-                onPress={() => setImages(images.filter((_, i) => i !== index))}
-              >
-                <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}> X </Text>
+                style={{
+                  position: 'absolute',
+                  top: -5,
+                  right: -5,
+                  backgroundColor: 'red',
+                  borderRadius: 10,
+                  padding: 2,
+                }}
+                onPress={() => setImages(images.filter((_, i) => i !== index))}>
+                <Text
+                  style={{color: 'white', fontSize: 10, fontWeight: 'bold'}}>
+                  {' '}
+                  X{' '}
+                </Text>
               </TouchableOpacity>
             </View>
           ))}
@@ -699,11 +734,15 @@ const NoteEditorScreen = () => {
         <MyButton title="Add Photos" variant="primary" onPress={pickImages} />
 
         <MyButton
-          title={isRandomImageLoading ? 'Generating Image...' : 'Generate Random Image'}
+          title={
+            isRandomImageLoading
+              ? 'Generating Image...'
+              : 'Generate Random Image'
+          }
           variant="primary"
           onPress={handleGenerateRandomImage}
           disabled={isRandomImageLoading}
-          style={{ marginTop: 10 }}
+          style={{marginTop: 10}}
         />
 
         {/* Mind Map */}
@@ -711,9 +750,8 @@ const NoteEditorScreen = () => {
           title="View Mind Map"
           variant="primary"
           onPress={handleViewMindMap}
-          style={{ marginTop: 10 }}
+          style={{marginTop: 10}}
         />
-
       </ScrollView>
 
       {/* for Font Size Picker Modal  */}
@@ -735,14 +773,14 @@ const NoteEditorScreen = () => {
                 style={[
                   editorStyles.fontPickerRow,
                   formatting.fontSize === opt.value &&
-                  editorStyles.fontPickerRowActive,
+                    editorStyles.fontPickerRowActive,
                 ]}>
                 <Text
                   style={[
                     editorStyles.fontPickerRowText,
                     // { fontSize: opt.value },
-                    opt?.value ? { fontSize: opt.value } : { fontSize: 16 },
-                    formatting.fontSize === opt.value && { color: '#3dc9f3' },
+                    opt?.value ? {fontSize: opt.value} : {fontSize: 16},
+                    formatting.fontSize === opt.value && {color: '#3dc9f3'},
                   ]}>
                   {opt.label}
                 </Text>
@@ -765,9 +803,13 @@ const NoteEditorScreen = () => {
           style={editorStyles.modalOverlay}
           activeOpacity={1}
           onPress={() => setShowFolderPicker(false)}>
-          <TouchableOpacity activeOpacity={1} style={editorStyles.folderPickerCard}>
+          <TouchableOpacity
+            activeOpacity={1}
+            style={editorStyles.folderPickerCard}>
             <Text style={editorStyles.fontPickerTitle}>Move to Folder</Text>
-            <ScrollView style={editorStyles.folderPickerList} nestedScrollEnabled>
+            <ScrollView
+              style={editorStyles.folderPickerList}
+              nestedScrollEnabled>
               <TouchableOpacity
                 onPress={() => {
                   setFolderId(null);
@@ -775,7 +817,9 @@ const NoteEditorScreen = () => {
                   setShowFolderPicker(false);
                 }}
                 style={editorStyles.folderPickerRow}>
-                <Text style={editorStyles.folderPickerRowText}>None (General)</Text>
+                <Text style={editorStyles.folderPickerRowText}>
+                  None (General)
+                </Text>
               </TouchableOpacity>
 
               {availableFolders.map((f: any) => (
@@ -787,7 +831,9 @@ const NoteEditorScreen = () => {
                     setShowFolderPicker(false);
                   }}
                   style={editorStyles.folderPickerRow}>
-                  <Text style={editorStyles.folderPickerRowText}>{String(f.folder_name)}</Text>
+                  <Text style={editorStyles.folderPickerRowText}>
+                    {String(f.folder_name)}
+                  </Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -1057,6 +1103,3 @@ const editorStyles = StyleSheet.create({
 });
 
 export default NoteEditorScreen;
-
-
-
